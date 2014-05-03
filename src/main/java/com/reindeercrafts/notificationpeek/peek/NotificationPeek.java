@@ -69,40 +69,45 @@ import java.util.List;
 
 public class NotificationPeek implements SensorActivityHandler.SensorChangedCallback {
 
-    public final static boolean DEBUG = true;
     private final static String TAG = "NotificationPeek";
+    public final static boolean DEBUG = false;
+
     private static final float ICON_LOW_OPACITY = 0.3f;
     private static final int NOTIFICATION_PEEK_TIME = 5000; // 5 secs
     private static final int PARTIAL_WAKELOCK_TIME = 10000; // 10 secs
     private static final long SCREEN_ON_START_DELAY = 300; // 300 ms
     private static final long REMOVE_VIEW_DELAY = 300; // 300 ms
     private static final int COL_NUM = 10;
-    private static RelativeLayout mPeekView;
+
     private SensorActivityHandler mSensorHandler;
     private KeyguardManager mKeyguardManager;
     private PowerManager mPowerManager;
     private WindowManager mWindowManager;
     private DevicePolicyManager mDevicePolicyManager;
+
     private PowerManager.WakeLock mPartialWakeLock;
     private Runnable mPartialWakeLockRunnable;
     private Runnable mLockScreenRunnable;
     private Handler mWakeLockHandler;
     private Handler mHandler;
-    private List<StatusBarNotification> mShownNotifications =
-            new ArrayList<StatusBarNotification>();
+
+    private List<StatusBarNotification> mShownNotifications
+            = new ArrayList<StatusBarNotification>();
     private StatusBarNotification mNextNotification;
+    private static RelativeLayout mPeekView;
     private LinearLayout mNotificationView;
-    // Changed to GridLayout for large numbers of notification.
     private GridLayout mNotificationsContainer;
     private ImageView mNotificationIcon;
     private TextView mNotificationText;
+
     private Context mContext;
+
     private boolean mRingingOrConnected;
     private boolean mShowing;
-    private boolean mEnabled = true;
+    private boolean mEnabled;
     private boolean mAnimating;
 
-    private boolean mEventsRegistered = false;
+    private boolean mEventsRegistered = true;
 
     private NotificationHub mNotificationHub;
 
