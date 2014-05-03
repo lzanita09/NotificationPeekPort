@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">NotificationPeek</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="service_name">NotificationPeek</string>
+    <string name="device_admin_description">Perform lock screen</string>
+    <string name="notification_access">Enable Notification Access</string>
+    <string name="device_access">Enable Device Access</string>
+
+</resources>
