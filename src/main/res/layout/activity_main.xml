@@ -1,0 +1,30 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:showDividers="middle"
+              android:divider="?android:dividerHorizontal"
+              android:dividerPadding="@dimen/activity_horizontal_margin"
+              android:orientation="vertical"
+              android:gravity="center"
+              tools:context="com.reindeercrafts.notificationpeek.MainActivity">
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/notification_access"
+            style="?android:borderlessButtonStyle"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:gravity="center"
+            android:id="@+id/notification_access_btn"/>
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/device_access"
+            style="?android:borderlessButtonStyle"
+            android:padding="@dimen/activity_horizontal_margin"
+            android:gravity="center"
+            android:id="@+id/device_access_btn"/>
+
+</LinearLayout>
