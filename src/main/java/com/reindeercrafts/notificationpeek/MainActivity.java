@@ -10,6 +10,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 
+import com.reindeercrafts.notificationpeek.diagnosis.PeekDiagnosisActivity;
+import com.reindeercrafts.notificationpeek.settings.Settings;
+
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -45,6 +48,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, Settings.class);
+            startActivity(intent);
+        } else if (id == R.id.action_diagnosis) {
+            Intent intent = new Intent(this, PeekDiagnosisActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
