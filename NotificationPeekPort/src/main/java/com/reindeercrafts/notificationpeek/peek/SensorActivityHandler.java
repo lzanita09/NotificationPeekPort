@@ -54,7 +54,7 @@ public class SensorActivityHandler {
     private boolean mGyroscopeRegistered;
 
     private boolean mInPocket;
-    private boolean mOnTable = true;
+    private boolean mOnTable;
 
     public SensorActivityHandler(Context context, SensorChangedCallback callback) {
         mContext = context;
@@ -84,7 +84,6 @@ public class SensorActivityHandler {
                     } else {
                         if (!mGyroscopeRegistered) {
                             registerEventListeners();
-
                         }
                     }
                     if (NotificationPeek.DEBUG) {
@@ -92,6 +91,9 @@ public class SensorActivityHandler {
                     }
                     boolean oldInPocket = mInPocket;
                     mInPocket = inPocket;
+                    if (mGyroscopeSensor == null) {
+                        mOnTable = mInPocket;
+                    }
                     if (oldInPocket != inPocket) {
                         mCallback.onPocketModeChanged(mInPocket);
                     }
@@ -234,36 +236,6 @@ public class SensorActivityHandler {
             mGyroscopeRegistered = false;
             mHasInitialValues = false;
         }
-    }
-
-    /**
-     * Attempts to make the peek work when there is no gyro. NotificationPeek will call this method
-     * according to the behaviors to set mOnTable.
-     *
-     * @param table
-     */
-    public void forceTable(boolean table) {
-        if (mGyroscopeSensor != null) {
-            return;
-        }
-        mOnTable = table;
-        if (table) {
-            mInPocket = true;
-        }
-    }
-
-    /**
-     * Stop listening to proximity sensor when there is no gyro.
-     *
-     * @return
-     */
-    public boolean forceRemoveListeners() {
-        if (mGyroscopeSensor != null) {
-            return true;
-        }
-
-        unregisterEventListeners();
-        return false;
     }
 
     public interface SensorChangedCallback {

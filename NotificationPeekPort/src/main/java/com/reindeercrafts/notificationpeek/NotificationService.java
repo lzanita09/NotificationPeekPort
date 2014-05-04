@@ -3,11 +3,13 @@ package com.reindeercrafts.notificationpeek;
 import android.app.Notification;
 import android.content.Intent;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
 import com.reindeercrafts.notificationpeek.peek.NotificationPeek;
+import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 
 
 /**
@@ -59,7 +61,13 @@ public class NotificationService extends NotificationListenerService {
 
         mNotificationHub.setCurrentNotification(sbn);
 
-        mNotificationPeek.showNotification(sbn, false);
+        // Retrieve user specified peek timeout.
+        int peekTimeoutMultiplier = Integer.parseInt(
+                PreferenceManager.getDefaultSharedPreferences(this)
+                        .getString(PreferenceKeys.PREF_PEEK_TIMEOUT, "1")
+        );
+
+        mNotificationPeek.showNotification(sbn, false, peekTimeoutMultiplier);
 
     }
 

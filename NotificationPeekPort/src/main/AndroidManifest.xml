@@ -10,7 +10,7 @@
             android:allowBackup="true"
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme">
+            android:theme="@android:style/Theme.Holo.Light">
 
         <service
                 android:name=".NotificationService"
@@ -21,18 +21,23 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".peek.NotificationPeek$NotificationPeekActivity"/>
+        <activity android:name=".peek.NotificationPeek$NotificationPeekActivity"
+                  android:theme="@android:style/Theme.Holo"/>
 
         <activity
                 android:name="com.reindeercrafts.notificationpeek.MainActivity"
-                android:label="@string/app_name"
-                android:theme="@android:style/Theme.Holo.Light">
+                android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity android:name=".diagnosis.PeekDiagnosisActivity"
+                  />
+
+        <activity android:name=".settings.Settings"/>
 
         <receiver
                 android:name=".LockscreenDeviceAdminReceiver"

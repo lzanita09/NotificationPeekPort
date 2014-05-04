@@ -43,6 +43,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
@@ -61,6 +62,7 @@ import android.widget.TextView;
 
 import com.reindeercrafts.notificationpeek.NotificationHub;
 import com.reindeercrafts.notificationpeek.R;
+import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -70,7 +72,7 @@ import java.util.List;
 public class NotificationPeek implements SensorActivityHandler.SensorChangedCallback {
 
     private final static String TAG = "NotificationPeek";
-    public final static boolean DEBUG = false;
+    public final static boolean DEBUG = true;
 
     private static final float ICON_LOW_OPACITY = 0.3f;
     private static final int NOTIFICATION_PEEK_TIME = 5000; // 5 secs
@@ -91,8 +93,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private Handler mWakeLockHandler;
     private Handler mHandler;
 
-    private List<StatusBarNotification> mShownNotifications
-            = new ArrayList<StatusBarNotification>();
+    private List<StatusBarNotification> mShownNotifications =
+            new ArrayList<StatusBarNotification>();
     private StatusBarNotification mNextNotification;
     private static RelativeLayout mPeekView;
     private LinearLayout mNotificationView;
@@ -104,12 +106,15 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     private boolean mRingingOrConnected;
     private boolean mShowing;
-    private boolean mEnabled;
+    private boolean mEnabled = true;
     private boolean mAnimating;
 
-    private boolean mEventsRegistered = true;
+    private boolean mEventsRegistered = false;
 
     private NotificationHub mNotificationHub;
+
+    // Peek timeout multiplier, the final peek timeout period is 5000 * mPeekTimeoutMultiplier.
+    private int mPeekTimeoutMultiplier;
 
     public NotificationPeek(NotificationHub notificationHub, Context context) {
         mNotificationHub = notificationHub;
@@ -118,6 +123,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         mSensorHandler = new SensorActivityHandler(context, this);
         mHandler = new Handler(Looper.getMainLooper());
         mWakeLockHandler = new Handler();
+
+        mSensorHandler.registerScreenReceiver();
 
         mPartialWakeLockRunnable = new Runnable() {
             @Override
@@ -146,8 +153,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                     }
                     mDevicePolicyManager.lockNow();
                     mSensorHandler.unregisterEventListeners();
-                    // Force to set onTable when there is no gyro.
-                    mSensorHandler.forceTable(true);
                     mEventsRegistered = false;
                 }
             }
@@ -313,7 +318,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }, SCREEN_ON_START_DELAY);
 
         // turn off screen task
-        mHandler.postDelayed(mLockScreenRunnable, SCREEN_ON_START_DELAY + NOTIFICATION_PEEK_TIME);
+        mHandler.postDelayed(mLockScreenRunnable,
+                SCREEN_ON_START_DELAY + NOTIFICATION_PEEK_TIME * mPeekTimeoutMultiplier);
 
         // remove view task (make sure screen is off by delaying a bit)
         mHandler.postDelayed(new Runnable() {
@@ -321,10 +327,12 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             public void run() {
                 dismissNotification();
             }
-        }, SCREEN_ON_START_DELAY + (NOTIFICATION_PEEK_TIME * (long) 1.3));
+        }, SCREEN_ON_START_DELAY + (NOTIFICATION_PEEK_TIME * mPeekTimeoutMultiplier));
     }
 
-    public void showNotification(StatusBarNotification n, boolean update) {
+    public void showNotification(StatusBarNotification n, boolean update,
+                                 int peekTimeoutMultiplier) {
+        mPeekTimeoutMultiplier = peekTimeoutMultiplier;
         showNotification(n, update, false);
     }
 
@@ -375,14 +383,14 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
             mWakeLockHandler.removeCallbacks(mPartialWakeLockRunnable);
 
-            addNotificationView(n); // add view instantly
+            addNotificationView(); // add view instantly
             if (!mAnimating) {
                 scheduleTasks();
             }
         }
     }
 
-    private void addNotificationView(StatusBarNotification n) {
+    private void addNotificationView() {
         if (!mShowing) {
             mShowing = true;
             Intent intent = new Intent(mContext, NotificationPeekActivity.class);
@@ -624,7 +632,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     @Override
     public void onPocketModeChanged(boolean inPocket) {
         if (!inPocket && mNextNotification != null) {
-            mSensorHandler.forceTable(false);
             showNotification(mNextNotification, false, true);
             mNextNotification = null;
         }
@@ -640,6 +647,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     @Override
     public void onScreenStateChaged(boolean screenOn) {
+        Log.d(TAG, "ScreenOn: " + screenOn);
         if (!screenOn) {
             mHandler.removeCallbacksAndMessages(null);
             dismissNotification();
@@ -668,10 +676,15 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
             setContentView(mPeekView);
 
-            mClockTextView = (TextView) PeekLayoutFactory
-                    .createPeekLayout(this, PeekLayoutFactory.LAYOUT_TYPE_CLOCK);
-            mPeekView.addView(mClockTextView);
-            mClockTextView.setText(getCurrentTimeText());
+            boolean showClock = PreferenceManager.getDefaultSharedPreferences(this)
+                    .getBoolean(PreferenceKeys.PREF_CLOCK, true);
+
+            if (showClock) {
+                mClockTextView = (TextView) PeekLayoutFactory
+                        .createPeekLayout(this, PeekLayoutFactory.LAYOUT_TYPE_CLOCK);
+                mPeekView.addView(mClockTextView);
+                mClockTextView.setText(getCurrentTimeText());
+            }
 
             mPeekView.setAlpha(1f);
             mPeekView.setVisibility(View.VISIBLE);
@@ -686,12 +699,15 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }
 
         private void initReceiver() {
+
             mReceiver = new NotificationPeekReceiver();
             IntentFilter filter = new IntentFilter();
             filter.addAction(NotificationPeekReceiver.ACTION_TURN_ON_SCREEN);
             filter.addAction(NotificationPeekReceiver.ACTION_DISMISS);
-            // Add time tick intent.
-            filter.addAction(Intent.ACTION_TIME_TICK);
+            // Add time tick intent only when the clock is shown.
+            if (mClockTextView != null) {
+                filter.addAction(Intent.ACTION_TIME_TICK);
+            }
 
             registerReceiver(mReceiver, filter);
         }
@@ -700,8 +716,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         protected void onDestroy() {
             super.onDestroy();
             try {
-                // Remove
-                mPeekView.removeView(mClockTextView);
+                // Remove Clock only when it is displayed.
+                if (mClockTextView != null) {
+                    mPeekView.removeView(mClockTextView);
+                }
                 unregisterReceiver(mReceiver);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -777,10 +795,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             try {
                 mPendingIntent.send();
                 dismissNotification();
-                mSensorHandler.forceRemoveListeners();
-
                 // Reset mOnTable and mInPocket for next notification.
-                mSensorHandler.forceTable(true);
                 removeNotification(mNotification);
             } catch (PendingIntent.CanceledException e) {
                 e.printStackTrace();

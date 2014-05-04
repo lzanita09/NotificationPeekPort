@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:showDividers="middle"
+              android:divider="?android:dividerHorizontal"
+              android:dividerPadding="8dp">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="8dp">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:textStyle="bold"
+                android:textAppearance="?android:textAppearanceLarge"
+                android:text="@string/sensor_states"
+                android:id="@+id/states_text"/>
+
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/states_container"
+                android:orientation="vertical"
+                android:gravity="center">
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:buttonBarButtonStyle"
+            android:id="@+id/send_notification_btn"
+            android:text="@string/send_notification"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:textStyle="bold"
+            android:padding="8dp"/>
+
+</LinearLayout>
