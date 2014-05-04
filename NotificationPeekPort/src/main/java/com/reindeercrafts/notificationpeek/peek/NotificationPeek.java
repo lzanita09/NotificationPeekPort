@@ -647,7 +647,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     @Override
     public void onScreenStateChaged(boolean screenOn) {
-        Log.d(TAG, "ScreenOn: " + screenOn);
         if (!screenOn) {
             mHandler.removeCallbacksAndMessages(null);
             dismissNotification();
