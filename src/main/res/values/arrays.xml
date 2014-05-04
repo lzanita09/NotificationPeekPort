@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="peek_time_out_entries">
+        <item>5 sec</item>
+        <item>10 sec</item>
+        <item>15 sec</item>
+        <item>20 sec</item>
+        <item>25 sec</item>
+        <item>30 sec</item>
+    </string-array>
+    
+    <string-array name="peek_time_out_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+</resources>
