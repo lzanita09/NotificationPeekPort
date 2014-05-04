@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/NotificationPeek.iml" filepath="$PROJECT_DIR$/NotificationPeek.iml" />
       <module fileurl="file://$PROJECT_DIR$/NotificationPeekPort/NotificationPeekPort.iml" filepath="$PROJECT_DIR$/NotificationPeekPort/NotificationPeekPort.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NotificationPeekPort/NotificationPeekPort.iml" filepath="$PROJECT_DIR$/NotificationPeekPort/NotificationPeekPort.iml" />
     </modules>
   </component>
 </project>
