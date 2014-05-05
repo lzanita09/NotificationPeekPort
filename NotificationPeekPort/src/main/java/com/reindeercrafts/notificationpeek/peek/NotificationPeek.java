@@ -64,7 +64,6 @@ import com.reindeercrafts.notificationpeek.NotificationHub;
 import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -711,6 +710,29 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             registerReceiver(mReceiver, filter);
         }
 
+        /**
+         * Unlocks device and runs {@link Runnable runnable} when unlocked.
+         *
+         * @param runnable may be null
+         */
+        public void unlock(final Runnable runnable, final boolean finish) {
+
+            // If keyguard is disabled no need to make
+            // a delay between calling this method and
+            // unlocking.
+            // Otherwise we need this delay to get new
+            // flags applied.
+            KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
+            int delay = km.isKeyguardLocked() ? 120 : 0;
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (runnable != null) runnable.run();
+                }
+            }, delay);
+        }
+
         @Override
         protected void onDestroy() {
             super.onDestroy();
@@ -723,15 +745,16 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         }
 
         /**
-         * Get formatted time String (hh:mm a).
+         * Get formatted time String (Follows system setting).
          *
          * @return Formatted time String.
          */
         private String getCurrentTimeText() {
-            return DateFormat.getTimeInstance(DateFormat.SHORT).format(new Date());
+            return android.text.format.DateFormat.getTimeFormat(this).format(new Date());
         }
 
         private class NotificationPeekReceiver extends BroadcastReceiver {
@@ -744,10 +767,16 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(ACTION_TURN_ON_SCREEN)) {
 
-                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                    );
+                    unlock(new Runnable() {
+                        @Override
+                        public void run() {
+                            getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES |
+                                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+                            );
+                        }
+                    }, false);
 
                 } else if (intent.getAction().equals(ACTION_DISMISS)) {
                     ViewGroup parent = (ViewGroup) mPeekView.getParent();
