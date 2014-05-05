@@ -2,6 +2,7 @@ package com.reindeercrafts.notificationpeek.peek;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,7 @@ public class PeekLayoutFactory {
     private static View createClockLayout(Context context) {
         TextView clockText = new TextView(context);
         clockText.setTextAppearance(context, android.R.style.TextAppearance_Holo_Large);
+        clockText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 28);
         clockText.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
         clockText.setGravity(Gravity.CENTER);
 
