@@ -711,26 +711,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }
 
         /**
-         * Unlocks device and runs {@link Runnable runnable} when unlocked.
-         *
-         * @param runnable may be null
+         * Unlocks device.
          */
-        public void unlock(final Runnable runnable, final boolean finish) {
-
-            // If keyguard is disabled no need to make
-            // a delay between calling this method and
-            // unlocking.
-            // Otherwise we need this delay to get new
-            // flags applied.
-            KeyguardManager km = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
-            int delay = km.isKeyguardLocked() ? 120 : 0;
-
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (runnable != null) runnable.run();
-                }
-            }, delay);
+        public void unlock() {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+            );
         }
 
         @Override
@@ -766,18 +753,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             @Override
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(ACTION_TURN_ON_SCREEN)) {
-
-                    unlock(new Runnable() {
-                        @Override
-                        public void run() {
-                            getWindow().addFlags(WindowManager.LayoutParams.FLAG_IGNORE_CHEEK_PRESSES |
-                                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                            );
-                        }
-                    }, false);
-
+                    unlock();
                 } else if (intent.getAction().equals(ACTION_DISMISS)) {
                     ViewGroup parent = (ViewGroup) mPeekView.getParent();
                     parent.removeView(mPeekView);
