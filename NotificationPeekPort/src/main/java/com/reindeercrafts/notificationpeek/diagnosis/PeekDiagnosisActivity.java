@@ -26,7 +26,7 @@ import com.reindeercrafts.notificationpeek.R;
 
 /**
  * Diagnosis activity for checking sensors and sending test notification.
- *
+ * <p/>
  * Created by zhelu on 5/3/14.
  */
 public class PeekDiagnosisActivity extends Activity implements View.OnClickListener {
@@ -93,13 +93,14 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
                 mDevicePolicyManager.lockNow();
             }
         }, LOCK_SCREEN_DELAY);
-        
+
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 NotificationManager manager =
                         (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
                 manager.notify(TEST_ID, builder.build());
+                finish();
             }
         }, SEND_NOTIFICATION_DELAY);
     }
