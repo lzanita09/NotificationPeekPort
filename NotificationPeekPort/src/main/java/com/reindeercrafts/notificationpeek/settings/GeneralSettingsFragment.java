@@ -29,6 +29,11 @@ public class GeneralSettingsFragment extends PreferenceFragment
                 (CheckBoxPreference) findPreference(PreferenceKeys.PREF_CLOCK);
         clockPref.setOnPreferenceChangeListener(this);
 
+        // Listen forever preference.
+        CheckBoxPreference alwaysListeningPref =
+                (CheckBoxPreference) findPreference(PreferenceKeys.PREF_ALWAYS_LISTENING);
+        alwaysListeningPref.setOnPreferenceChangeListener(this);
+
         // Notification Peek timeout preference.
         ListPreference peekTimeoutPref =
                 (ListPreference) findPreference(PreferenceKeys.PREF_PEEK_TIMEOUT);
@@ -47,6 +52,8 @@ public class GeneralSettingsFragment extends PreferenceFragment
         } else if (key.equals(PreferenceKeys.PREF_PEEK_TIMEOUT)) {
             sharedPref.edit().putString(key, (String) newValue).apply();
             bindPreferenceSummaryToValue(preference);
+        } else if (key.equals(PreferenceKeys.PREF_ALWAYS_LISTENING)) {
+            sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
         }
 
         return true;
@@ -56,8 +63,8 @@ public class GeneralSettingsFragment extends PreferenceFragment
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         if (preference instanceof ListPreference) {
-            int index = ((ListPreference) preference).findIndexOfValue(sharedPref.getString(
-                    preference.getKey(), "1"));
+            int index = ((ListPreference) preference)
+                    .findIndexOfValue(sharedPref.getString(preference.getKey(), "1"));
             CharSequence newSum = ((ListPreference) preference).getEntries()[index];
             preference.setSummary(newSum);
 

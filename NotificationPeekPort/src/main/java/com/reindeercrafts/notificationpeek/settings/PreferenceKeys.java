@@ -9,4 +9,5 @@ public class PreferenceKeys {
 
     public static final String PREF_CLOCK = "show_clock";
     public static final String PREF_PEEK_TIMEOUT = "peek_time_out";
+    public static final String PREF_ALWAYS_LISTENING = "always_listening";
 }

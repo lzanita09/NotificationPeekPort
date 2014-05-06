@@ -34,7 +34,7 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
     private static final String RESULT_OK = "OK";
     private static final String RESULT_FAILED = "Missing";
     private static final long LOCK_SCREEN_DELAY = 1000;
-    private static final long SEND_NOTIFICATION_DELAY = 2500;
+    private static final long SEND_NOTIFICATION_DELAY = 5000;
     private static final int TEST_ID = 10592;
 
     private DevicePolicyManager mDevicePolicyManager;
@@ -77,6 +77,7 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
     private void diagnoseNotification() {
 
         Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 

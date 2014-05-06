@@ -79,14 +79,15 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private static final long SCREEN_ON_START_DELAY = 300; // 300 ms
     private static final long REMOVE_VIEW_DELAY = 300; // 300 ms
     private static final int COL_NUM = 10;
+    private static final long SCREEN_WAKELOCK_TIMEOUT = 1000; // 1 sec
 
     private SensorActivityHandler mSensorHandler;
     private KeyguardManager mKeyguardManager;
     private PowerManager mPowerManager;
-    private WindowManager mWindowManager;
     private DevicePolicyManager mDevicePolicyManager;
 
     private PowerManager.WakeLock mPartialWakeLock;
+    private PowerManager.WakeLock mScreenWakeLock;
     private Runnable mPartialWakeLockRunnable;
     private Runnable mLockScreenRunnable;
     private Handler mWakeLockHandler;
@@ -115,6 +116,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     // Peek timeout multiplier, the final peek timeout period is 5000 * mPeekTimeoutMultiplier.
     private int mPeekTimeoutMultiplier;
 
+    // Experimental feature: not removing mNextNotification, let listeners to listen all the time
+    // until user click screen.
+    private boolean mListenForever;
+
     public NotificationPeek(NotificationHub notificationHub, Context context) {
         mNotificationHub = notificationHub;
         mContext = context;
@@ -135,8 +140,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                         if (DEBUG) {
                             Log.d(TAG, "Removing event listeners");
                         }
-                        mSensorHandler.unregisterEventListeners();
+
+                        tryUnregisterEventListeners();
                         mEventsRegistered = false;
+
                     }
                     mPartialWakeLock.release();
                 }
@@ -151,8 +158,11 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                         Log.d(TAG, "Turning screen off");
                     }
                     mDevicePolicyManager.lockNow();
-                    mSensorHandler.unregisterEventListeners();
+                    tryUnregisterEventListeners();
                     mEventsRegistered = false;
+                    if (mScreenWakeLock.isHeld()) {
+                        mScreenWakeLock.release();
+                    }
                 }
             }
         };
@@ -163,7 +173,11 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         mPowerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         mPartialWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 getClass().getSimpleName() + "_partial");
-        mWindowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+        // Screen dim wakelock for waking up screen.
+        mScreenWakeLock = mPowerManager
+                .newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                        getClass().getSimpleName() + "_screen");
 
         TelephonyManager telephonyManager =
                 (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
@@ -189,7 +203,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    //mStatusBar.dismissHover(true); // hide hover if showing
                     dismissNotification();
                 }
                 return true;
@@ -289,6 +302,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     }
 
+    /* If mListenForever is true, we don't remove listeners, but let them keep listening. */
+    private void tryUnregisterEventListeners() {
+        if (!mListenForever) {
+            mSensorHandler.unregisterEventListeners();
+        }
+    }
+
     private boolean isKeyguardSecureShowing() {
         return mKeyguardManager.isKeyguardLocked() && mKeyguardManager.isKeyguardSecure();
     }
@@ -311,8 +331,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 if (DEBUG) {
                     Log.d(TAG, "Turning screen on");
                 }
-                mContext.sendBroadcast(new Intent(
-                        NotificationPeekActivity.NotificationPeekReceiver.ACTION_TURN_ON_SCREEN));
+//                mContext.sendBroadcast(new Intent(
+//                        NotificationPeekActivity.NotificationPeekReceiver.ACTION_TURN_ON_SCREEN));
+                mScreenWakeLock.acquire(SCREEN_WAKELOCK_TIMEOUT);
             }
         }, SCREEN_ON_START_DELAY);
 
@@ -329,6 +350,14 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }, SCREEN_ON_START_DELAY + (NOTIFICATION_PEEK_TIME * mPeekTimeoutMultiplier));
     }
 
+    /* Show notification with up-to-date timeout and listen forever configurations. */
+    public void showNotification(StatusBarNotification n, boolean update, int peekTimeoutMultiplier,
+                                 boolean listenForever) {
+        mListenForever = listenForever;
+        showNotification(n, update, peekTimeoutMultiplier);
+    }
+
+    /* Show notification with up-to-date timeout */
     public void showNotification(StatusBarNotification n, boolean update,
                                  int peekTimeoutMultiplier) {
         mPeekTimeoutMultiplier = peekTimeoutMultiplier;
@@ -601,7 +630,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     private Drawable getIconFromResource(StatusBarNotification n) {
-        Drawable icon = null;
+        Drawable icon;
         String packageName = n.getPackageName();
         int resource = n.getNotification().icon;
         try {
@@ -632,7 +661,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     public void onPocketModeChanged(boolean inPocket) {
         if (!inPocket && mNextNotification != null) {
             showNotification(mNextNotification, false, true);
-            mNextNotification = null;
+
+            // If mListenForever is true, we don't set mNextNotification to null, which keeps
+            // this part executable even it is not the latest notification. And since we also keep
+            // listeners listening, this part will always run and trigger showNotification().
+            if (!mListenForever) {
+                mNextNotification = null;
+            }
         }
     }
 
@@ -640,7 +675,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     public void onTableModeChanged(boolean onTable) {
         if (!onTable && mNextNotification != null) {
             showNotification(mNextNotification, false, true);
-            mNextNotification = null;
+
+            if (!mListenForever) {
+                mNextNotification = null;
+            }
         }
     }
 
@@ -669,6 +707,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
             setTheme(android.R.style.Theme_Holo_NoActionBar_Fullscreen);
             getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+            );
 
             super.onCreate(savedInstanceState);
 
@@ -723,6 +764,11 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         @Override
         protected void onDestroy() {
             super.onDestroy();
+
+            // Remove mPeekView from its parent so that it can be reused.
+            ViewGroup parent = (ViewGroup) mPeekView.getParent();
+            parent.removeView(mPeekView);
+
             try {
                 // Remove Clock only when it is displayed.
                 if (mClockTextView != null) {
@@ -747,7 +793,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         private class NotificationPeekReceiver extends BroadcastReceiver {
 
             public static final String ACTION_TURN_ON_SCREEN = "NotificationPeek.turn_on_screen";
-
             public static final String ACTION_DISMISS = "NotificationPeek.dismiss_notification";
 
             @Override
@@ -755,8 +800,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 if (intent.getAction().equals(ACTION_TURN_ON_SCREEN)) {
                     unlock();
                 } else if (intent.getAction().equals(ACTION_DISMISS)) {
-                    ViewGroup parent = (ViewGroup) mPeekView.getParent();
-                    parent.removeView(mPeekView);
                     finish();
 
                 } else if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
@@ -801,6 +844,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 dismissNotification();
                 // Reset mOnTable and mInPocket for next notification.
                 removeNotification(mNotification);
+                mSensorHandler.unregisterEventListeners();
+                mNextNotification = null;
             } catch (PendingIntent.CanceledException e) {
                 e.printStackTrace();
             }

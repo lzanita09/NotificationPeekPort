@@ -2,6 +2,7 @@ package com.reindeercrafts.notificationpeek;
 
 import android.app.Notification;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
@@ -61,13 +62,18 @@ public class NotificationService extends NotificationListenerService {
 
         mNotificationHub.setCurrentNotification(sbn);
 
-        // Retrieve user specified peek timeout.
-        int peekTimeoutMultiplier = Integer.parseInt(
-                PreferenceManager.getDefaultSharedPreferences(this)
-                        .getString(PreferenceKeys.PREF_PEEK_TIMEOUT, "1")
-        );
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        mNotificationPeek.showNotification(sbn, false, peekTimeoutMultiplier);
+        // Retrieve user specified peek timeout.
+        int peekTimeoutMultiplier =
+                Integer.parseInt(preferences.getString(PreferenceKeys.PREF_PEEK_TIMEOUT, "1")
+                );
+
+        // Does user select always listening?
+        boolean alwaysListening =
+                preferences.getBoolean(PreferenceKeys.PREF_ALWAYS_LISTENING, false);
+
+        mNotificationPeek.showNotification(sbn, false, peekTimeoutMultiplier, alwaysListening);
 
     }
 

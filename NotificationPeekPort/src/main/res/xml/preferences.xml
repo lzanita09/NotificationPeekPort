@@ -8,6 +8,13 @@
         android:summaryOn="@string/show_clock"
         android:summaryOff="@string/hide_clock" />
 
+    <CheckBoxPreference
+        android:key="always_listening"
+        android:defaultValue="false"
+        android:title="@string/always_listening"
+        android:summary="@string/always_listening_sum" />
+
+
     <ListPreference
         android:key="peek_time_out"
         android:title="@string/peek_timeout_title"
