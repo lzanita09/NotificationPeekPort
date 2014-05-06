@@ -14,6 +14,13 @@ Notification Peek (Paranoid Android) is a nice feature for displaying notificati
 * UI tweaks, changed LinearLayout to GridLayout for displaying large numbers of unread notifications.
 * Added notification peek timeout option.
 
+#### How to uninstall
+Because the Device Administrator disables apps that is activated from being uninstalled, you need to do the following if you want to uninstall the app:
+* Go to your System Settings.
+* Select **Security**.
+* Select **Device administrators**.
+* Uncheck NotificationPeek.
+* Now you can uninstall the app.
 
 #### What is missing
 * Icon.
