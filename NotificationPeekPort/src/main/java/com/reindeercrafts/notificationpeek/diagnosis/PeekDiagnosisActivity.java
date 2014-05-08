@@ -86,6 +86,7 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
                 .setTicker(getString(R.string.diagnosis_notification_title))
                 .setContentTitle(getString(R.string.diagnosis_notification_title))
                 .setContentText(getString(R.string.diagnosis_notification_content))
+                .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
 
         mHandler.postDelayed(new Runnable() {

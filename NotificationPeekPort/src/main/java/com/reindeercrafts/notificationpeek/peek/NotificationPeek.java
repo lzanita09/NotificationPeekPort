@@ -158,8 +158,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                         Log.d(TAG, "Turning screen off");
                     }
                     mDevicePolicyManager.lockNow();
-                    tryUnregisterEventListeners();
-                    mEventsRegistered = false;
+
                     if (mScreenWakeLock.isHeld()) {
                         mScreenWakeLock.release();
                     }
@@ -331,8 +330,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 if (DEBUG) {
                     Log.d(TAG, "Turning screen on");
                 }
-//                mContext.sendBroadcast(new Intent(
-//                        NotificationPeekActivity.NotificationPeekReceiver.ACTION_TURN_ON_SCREEN));
                 mScreenWakeLock.acquire(SCREEN_WAKELOCK_TIMEOUT);
             }
         }, SCREEN_ON_START_DELAY);
@@ -347,7 +344,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             public void run() {
                 dismissNotification();
             }
-        }, SCREEN_ON_START_DELAY + (NOTIFICATION_PEEK_TIME * mPeekTimeoutMultiplier));
+        }, SCREEN_ON_START_DELAY + (NOTIFICATION_PEEK_TIME * mPeekTimeoutMultiplier * (long) 1.3));
     }
 
     /* Show notification with up-to-date timeout and listen forever configurations. */
@@ -466,6 +463,12 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     public void updateNotificationIcons() {
+        if (mShowing) {
+            //TODO: Find workaround for updating notificaiton icons when the activity is shown.
+            // Because of the thread, we cannot update notification icons here when the acivity
+            // is shown.
+            return;
+        }
         mNotificationsContainer.removeAllViews();
         int iconSize =
                 mContext.getResources().getDimensionPixelSize(R.dimen.small_notification_icon_size);
@@ -509,6 +512,12 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     private void updateSelection(StatusBarNotification n) {
+        if (mShowing) {
+            //TODO: Find workaround for updating notificaiton icons when the activity is shown.
+            // Because of the thread, we cannot update notification icons here when the acivity
+            // is shown.
+            return;
+        }
         String oldNotif = PanelHelper
                 .getContentDescription((StatusBarNotification) mNotificationView.getTag());
         String newNotif = PanelHelper.getContentDescription(n);
@@ -659,26 +668,30 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     @Override
     public void onPocketModeChanged(boolean inPocket) {
+        // If we set to use always listening, if we detect the device is out of pocket,
+        // we restore mNextNotification, and let showNotification to decide whether it is active
+        // or not.
+        if (inPocket && mListenForever && mNextNotification == null) {
+            mNextNotification = mNotificationHub.getCurrentNotification();
+        }
         if (!inPocket && mNextNotification != null) {
             showNotification(mNextNotification, false, true);
-
-            // If mListenForever is true, we don't set mNextNotification to null, which keeps
-            // this part executable even it is not the latest notification. And since we also keep
-            // listeners listening, this part will always run and trigger showNotification().
-            if (!mListenForever) {
-                mNextNotification = null;
-            }
+            mNextNotification = null;
         }
     }
 
     @Override
     public void onTableModeChanged(boolean onTable) {
+        // If we set to use always listening, if we detect the device is held on hand,
+        // we restore mNextNotification, and let showNotification to decide whether it is active
+        // or not.
+        if (!onTable && mListenForever && mNextNotification == null) {
+            mNextNotification = mNotificationHub.getCurrentNotification();
+        }
+
         if (!onTable && mNextNotification != null) {
             showNotification(mNextNotification, false, true);
-
-            if (!mListenForever) {
-                mNextNotification = null;
-            }
+            mNextNotification = null;
         }
     }
 
@@ -705,7 +718,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         @Override
         protected void onCreate(Bundle savedInstanceState) {
 
-            setTheme(android.R.style.Theme_Holo_NoActionBar_Fullscreen);
             getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                             WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
