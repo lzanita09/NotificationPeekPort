@@ -27,5 +27,8 @@ Because the Device Administrator disables apps that is activated from being unin
 * Name.
 * A lot of great features.
 
+#### Known issue
+* If the Peek view is shown, it won't update new incoming notifications. 
+
 #### Credits
 * **[Paranoid Android](http://paranoidandroid.co/)** and its open source **[AOSPA project](https://github.com/AOSPA)**.
