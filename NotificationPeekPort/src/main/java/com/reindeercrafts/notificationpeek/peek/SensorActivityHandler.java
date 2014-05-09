@@ -36,7 +36,7 @@ public class SensorActivityHandler {
     private SensorManager mSensorManager;
     private SensorEventListener mProximityEventListener;
     private SensorEventListener mGyroscopeEventListener;
-    private Sensor mProximitySensor;
+    private Sensor mProximityLightSensor;
     private Sensor mGyroscopeSensor;
 
     private ScreenReceiver mScreenReceiver;
@@ -64,9 +64,15 @@ public class SensorActivityHandler {
 
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
 
-        // get proximity sensor for in-pocket detection
-        mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        if (mProximitySensor != null) {
+        // get proximity sensor for in-pocket detection, if no proximity sensor detected, try
+        // light sensor.
+        mProximityLightSensor =
+                mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null ?
+                        mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) :
+                        mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+
+
+        if (mProximityLightSensor != null) {
             mProximityEventListener = new SensorEventListener() {
                 @Override
                 public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -197,13 +203,14 @@ public class SensorActivityHandler {
             if (NotificationPeek.DEBUG) {
                 Log.d(TAG, "Registering proximity polling");
             }
-            mSensorManager.registerListener(mProximityEventListener, mProximitySensor,
+            mSensorManager.registerListener(mProximityEventListener, mProximityLightSensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
             mProximityRegistered = true;
         }
         if (mGyroscopeSensor != null && !mGyroscopeRegistered) {
-            if (NotificationPeek.DEBUG)
+            if (NotificationPeek.DEBUG) {
                 Log.d(TAG, "Registering gyroscope polling");
+            }
             mSensorManager.registerListener(mGyroscopeEventListener, mGyroscopeSensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
             mGyroscopeRegistered = true;

@@ -64,6 +64,10 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
     private void diagnoseSensors() {
         SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
+        // Check if there is light sensor.
+        Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        mDiagnosisLinear.addView(generateResultItem("Light Sensor", lightSensor != null));
+
         // Check if there is proximity sensor.
         Sensor proxSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         mDiagnosisLinear.addView(generateResultItem("Proximity Sensor", proxSensor != null));
