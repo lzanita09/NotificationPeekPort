@@ -7,11 +7,13 @@ import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -23,6 +25,7 @@ import android.widget.TextView;
 
 import com.reindeercrafts.notificationpeek.MainActivity;
 import com.reindeercrafts.notificationpeek.R;
+import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 
 /**
  * Diagnosis activity for checking sensors and sending test notification.
@@ -33,6 +36,8 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
 
     private static final String RESULT_OK = "OK";
     private static final String RESULT_FAILED = "Missing";
+    private static final String RESULT_DISABLE = "Disabled";
+
     private static final long LOCK_SCREEN_DELAY = 1000;
     private static final long SEND_NOTIFICATION_DELAY = 5000;
     private static final int TEST_ID = 10592;
@@ -62,19 +67,19 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
     }
 
     private void diagnoseSensors() {
-        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Check if there is light sensor.
-        Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        mDiagnosisLinear.addView(generateResultItem("Light Sensor", lightSensor != null));
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         // Check if there is proximity sensor.
         Sensor proxSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        mDiagnosisLinear.addView(generateResultItem("Proximity Sensor", proxSensor != null));
+        mDiagnosisLinear.addView(generateResultItem("Proximity/Light Sensor", proxSensor != null,
+                preferences.getBoolean(PreferenceKeys.PREF_PROX_LIGHT_SENSOR, true)));
 
         // Check if there is gyroscope sensor.
         Sensor gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        mDiagnosisLinear.addView(generateResultItem("Gyroscope Sensor", gyroSensor != null));
+        mDiagnosisLinear.addView(generateResultItem("Gyroscope Sensor", gyroSensor != null,
+                preferences.getBoolean(PreferenceKeys.PREF_GYRO_SENSOR, true)));
 
     }
 
@@ -90,8 +95,7 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
                 .setTicker(getString(R.string.diagnosis_notification_title))
                 .setContentTitle(getString(R.string.diagnosis_notification_title))
                 .setContentText(getString(R.string.diagnosis_notification_content))
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent);
+                .setAutoCancel(true).setContentIntent(pendingIntent);
 
         mHandler.postDelayed(new Runnable() {
             @Override
@@ -111,7 +115,7 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
         }, SEND_NOTIFICATION_DELAY);
     }
 
-    private View generateResultItem(String title, boolean success) {
+    private View generateResultItem(String title, boolean success, boolean enabled) {
         LayoutInflater inflater = LayoutInflater.from(this);
 
         View root = inflater.inflate(R.layout.diagnosis_item_layout, null);
@@ -121,7 +125,11 @@ public class PeekDiagnosisActivity extends Activity implements View.OnClickListe
         titleText.setText(title);
 
         SpannableString spannedResult;
-        if (success) {
+        if (!enabled) {
+            spannedResult = new SpannableString(RESULT_DISABLE);
+            spannedResult.setSpan(new ForegroundColorSpan(Color.RED), 0, RESULT_DISABLE.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        } else if (success) {
             spannedResult = new SpannableString(RESULT_OK);
             spannedResult.setSpan(new ForegroundColorSpan(Color.GREEN), 0, RESULT_OK.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);

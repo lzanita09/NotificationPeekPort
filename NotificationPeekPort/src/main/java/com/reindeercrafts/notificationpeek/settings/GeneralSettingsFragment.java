@@ -1,5 +1,6 @@
 package com.reindeercrafts.notificationpeek.settings;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -9,6 +10,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
 import com.reindeercrafts.notificationpeek.R;
+import com.reindeercrafts.notificationpeek.peek.SensorActivityHandler;
 
 /**
  * General settings fragment.
@@ -40,6 +42,17 @@ public class GeneralSettingsFragment extends PreferenceFragment
         peekTimeoutPref.setOnPreferenceChangeListener(this);
         bindPreferenceSummaryToValue(peekTimeoutPref);
 
+        // Gyroscope sensor enable/disable preference.
+        CheckBoxPreference gyroPref =
+                (CheckBoxPreference) findPreference(PreferenceKeys.PREF_GYRO_SENSOR);
+        gyroPref.setOnPreferenceChangeListener(this);
+
+
+        // Proximity/Light sensor enable/disable preference.
+        CheckBoxPreference proxPref =
+                (CheckBoxPreference) findPreference(PreferenceKeys.PREF_PROX_LIGHT_SENSOR);
+        proxPref.setOnPreferenceChangeListener(this);
+
     }
 
     @Override
@@ -47,15 +60,21 @@ public class GeneralSettingsFragment extends PreferenceFragment
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         String key = preference.getKey();
-        if (key.equals(PreferenceKeys.PREF_CLOCK)) {
-            sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
-        } else if (key.equals(PreferenceKeys.PREF_PEEK_TIMEOUT)) {
+        if (key.equals(PreferenceKeys.PREF_PEEK_TIMEOUT)) {
             sharedPref.edit().putString(key, (String) newValue).apply();
             bindPreferenceSummaryToValue(preference);
-        } else if (key.equals(PreferenceKeys.PREF_ALWAYS_LISTENING)) {
-            sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
-        }
 
+        } else if (key.equals(PreferenceKeys.PREF_ALWAYS_LISTENING) ||
+                key.equals(PreferenceKeys.PREF_CLOCK)) {
+            sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
+
+        } else if (key.equals(PreferenceKeys.PREF_GYRO_SENSOR) ||
+                key.equals(PreferenceKeys.PREF_PROX_LIGHT_SENSOR)) {
+            sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
+
+            // Send broadcast to request update sensor use changes.
+            getActivity().sendBroadcast(new Intent(SensorActivityHandler.ACTION_UPDATE_SENSOR_USE));
+        }
         return true;
     }
 

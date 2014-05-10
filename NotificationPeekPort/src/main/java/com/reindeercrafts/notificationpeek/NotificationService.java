@@ -66,8 +66,7 @@ public class NotificationService extends NotificationListenerService {
 
         // Retrieve user specified peek timeout.
         int peekTimeoutMultiplier =
-                Integer.parseInt(preferences.getString(PreferenceKeys.PREF_PEEK_TIMEOUT, "1")
-                );
+                Integer.parseInt(preferences.getString(PreferenceKeys.PREF_PEEK_TIMEOUT, "1"));
 
         // Does user select always listening?
         boolean alwaysListening =
@@ -82,6 +81,11 @@ public class NotificationService extends NotificationListenerService {
         mNotificationHub.removeNotification(sbn);
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mNotificationPeek.unregisterScreenReceiver();
+    }
 
     /**
      * Check if the given package name is in black list. There are some notifications that contain

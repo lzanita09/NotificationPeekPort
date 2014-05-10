@@ -33,7 +33,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Path;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -213,8 +212,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         NotificationLayout rootView = new NotificationLayout(context);
         rootView.setOrientation(LinearLayout.VERTICAL);
         rootView.setNotificationPeek(NotificationPeek.this);
-        rootView.setId(1);
-
         mPeekView.addView(rootView);
 
         RelativeLayout.LayoutParams rootLayoutParams =
@@ -651,19 +648,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         return icon;
     }
 
-    private WindowManager.LayoutParams getLayoutParams() {
-        WindowManager.LayoutParams lp =
-                new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.TYPE_APPLICATION_PANEL,
-                        WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM |
-                                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS |
-                                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED |
-                                WindowManager.LayoutParams.FLAG_DIM_BEHIND, PixelFormat.TRANSLUCENT
-                );
-        lp.dimAmount = 1f;
-        lp.gravity = Gravity.CENTER;
-        return lp;
+    public void unregisterScreenReceiver() {
+        mSensorHandler.unregisterScreenReceiver();
     }
 
     @Override
@@ -702,6 +688,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             dismissNotification();
         }
     }
+
 
     /**
      * This class is used to display the Notification Peek layout. The original implementation
@@ -753,7 +740,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
             mReceiver = new NotificationPeekReceiver();
             IntentFilter filter = new IntentFilter();
-            filter.addAction(NotificationPeekReceiver.ACTION_TURN_ON_SCREEN);
             filter.addAction(NotificationPeekReceiver.ACTION_DISMISS);
             // Add time tick intent only when the clock is shown.
             if (mClockTextView != null) {
@@ -761,16 +747,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             }
 
             registerReceiver(mReceiver, filter);
-        }
-
-        /**
-         * Unlocks device.
-         */
-        public void unlock() {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-            );
         }
 
         @Override
@@ -804,16 +780,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
         private class NotificationPeekReceiver extends BroadcastReceiver {
 
-            public static final String ACTION_TURN_ON_SCREEN = "NotificationPeek.turn_on_screen";
+
             public static final String ACTION_DISMISS = "NotificationPeek.dismiss_notification";
 
             @Override
             public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(ACTION_TURN_ON_SCREEN)) {
-                    unlock();
-                } else if (intent.getAction().equals(ACTION_DISMISS)) {
+                if (intent.getAction().equals(ACTION_DISMISS)) {
                     finish();
-
                 } else if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
                     mClockTextView.setText(getCurrentTimeText());
                 }

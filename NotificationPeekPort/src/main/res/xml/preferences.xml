@@ -1,25 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <CheckBoxPreference
-        android:key="show_clock"
-        android:defaultValue="true"
-        android:title="@string/show_clock_title"
-        android:summaryOn="@string/show_clock"
-        android:summaryOff="@string/hide_clock" />
+    <PreferenceCategory
+            android:title="@string/general_preferences">
+        <CheckBoxPreference
+                android:key="show_clock"
+                android:defaultValue="true"
+                android:title="@string/show_clock_title"
+                android:summaryOn="@string/show_clock"
+                android:summaryOff="@string/hide_clock"/>
 
-    <CheckBoxPreference
-        android:key="always_listening"
-        android:defaultValue="false"
-        android:title="@string/always_listening"
-        android:summary="@string/always_listening_sum" />
+        <CheckBoxPreference
+                android:key="always_listening"
+                android:defaultValue="false"
+                android:title="@string/always_listening"
+                android:summary="@string/always_listening_sum"/>
 
 
-    <ListPreference
-        android:key="peek_time_out"
-        android:title="@string/peek_timeout_title"
-        android:entries="@array/peek_time_out_entries"
-        android:entryValues="@array/peek_time_out_entry_values" />
+        <ListPreference
+                android:key="peek_time_out"
+                android:title="@string/peek_timeout_title"
+                android:entries="@array/peek_time_out_entries"
+                android:entryValues="@array/peek_time_out_entry_values"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="@string/sensor_preferences">
+        <CheckBoxPreference
+                android:key="gyro_sensor"
+                android:defaultValue="true"
+                android:title="@string/use_gyro"
+                android:summaryOn="@string/enable_gyro_sum"
+                android:summaryOff="@string/disable_gyro_sum" />
+
+        <CheckBoxPreference
+                android:key="prox_light_sensor"
+                android:defaultValue="true"
+                android:title="@string/use_prox_light"
+                android:summaryOn="@string/enable_prox_light_sum"
+                android:summaryOff="@string/disable_prox_light_sum" />
+
+    </PreferenceCategory>
 
 
 </PreferenceScreen>

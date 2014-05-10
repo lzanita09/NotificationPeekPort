@@ -35,7 +35,7 @@ public class PeekLayoutFactory {
     private static View createClockLayout(Context context) {
         TextView clockText = new TextView(context);
         clockText.setTextAppearance(context, android.R.style.TextAppearance_Holo_Large);
-        clockText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 28);
+        clockText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 32);
         clockText.setTypeface(Typeface.create("sans-serif-thin", Typeface.NORMAL));
         clockText.setGravity(Gravity.CENTER);
 

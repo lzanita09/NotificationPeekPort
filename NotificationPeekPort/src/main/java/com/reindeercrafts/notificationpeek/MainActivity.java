@@ -9,28 +9,43 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.reindeercrafts.notificationpeek.diagnosis.PeekDiagnosisActivity;
 import com.reindeercrafts.notificationpeek.settings.Settings;
+import com.reindeercrafts.notificationpeek.utils.AccessChecker;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
     public static final String ACTION_NOTIFICATION_LISTENER_SETTINGS =
             "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
-    private Button mDeviceAccessBtn, mNotificationAccessBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initViews();
+    }
 
-        mDeviceAccessBtn = (Button) findViewById(R.id.device_access_btn);
-        mNotificationAccessBtn = (Button) findViewById(R.id.notification_access_btn);
+    private void initViews() {
+        // Device Admin access button.
+        Button deviceAccessBtn = (Button) findViewById(R.id.device_access_btn);
+        deviceAccessBtn.setEnabled(!AccessChecker.isDeviceAdminEnabled(this));
+        deviceAccessBtn.setOnClickListener(this);
 
-        mDeviceAccessBtn.setOnClickListener(this);
-        mNotificationAccessBtn.setOnClickListener(this);
+        // Notification access button.
+        Button notificationAccessBtn = (Button) findViewById(R.id.notification_access_btn);
+        notificationAccessBtn.setEnabled(!AccessChecker.isNotificationAccessEnabled(this));
+        notificationAccessBtn.setOnClickListener(this);
 
+        // Instructions text.
+        TextView instructionText = (TextView) findViewById(R.id.instruction_text);
+        if (deviceAccessBtn.isEnabled() || notificationAccessBtn.isEnabled()) {
+            instructionText.setText(R.string.instruction_start);
+        } else {
+            instructionText.setText(R.string.instruction_ok);
+        }
     }
 
 
@@ -59,6 +74,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        initViews();
+    }
+
+    @Override
     public void onClick(View v) {
         Intent intent;
         switch (v.getId()) {
@@ -66,9 +87,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
                 intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN,
                         new ComponentName(this, LockscreenDeviceAdminReceiver.class));
-                intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                        getString(R.string.device_admin_description));
-                startActivityForResult(intent, 0);
+                startActivity(intent);
                 break;
 
             case R.id.notification_access_btn:

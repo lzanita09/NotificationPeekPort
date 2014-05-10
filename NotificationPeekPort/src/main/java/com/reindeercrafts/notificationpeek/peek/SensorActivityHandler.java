@@ -20,13 +20,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
+
 public class SensorActivityHandler {
+
+    public final static String ACTION_UPDATE_SENSOR_USE = "NotificationPeek.update_sensor_use";
 
     private final static String TAG = "NotificationPeek.SensorActivityHandler";
 
@@ -56,62 +62,36 @@ public class SensorActivityHandler {
     private boolean mInPocket;
     private boolean mOnTable;
 
+    // User preferences of using sensors or not.
+    private boolean mUseGyroSensor;
+    private boolean mUseProxLightSensor;
+
     public SensorActivityHandler(Context context, SensorChangedCallback callback) {
         mContext = context;
         mCallback = callback;
 
         mScreenReceiver = new ScreenReceiver();
 
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        mUseProxLightSensor = preferences.getBoolean(PreferenceKeys.PREF_PROX_LIGHT_SENSOR, true);
+        mUseGyroSensor = preferences.getBoolean(PreferenceKeys.PREF_GYRO_SENSOR, true);
+
+        initSensors(context);
+
+    }
+
+    private void initSensors(Context context) {
         mSensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        initProximityLightSensor();
+        initGyroscopeSensor();
+    }
 
-        // get proximity sensor for in-pocket detection, if no proximity sensor detected, try
-        // light sensor.
-        mProximityLightSensor =
-                mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null ?
-                        mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) :
-                        mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-
-
-        if (mProximityLightSensor != null) {
-            mProximityEventListener = new SensorEventListener() {
-                @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                }
-
-                @Override
-                public void onSensorChanged(SensorEvent event) {
-                    boolean inPocket = event.values[0] == 0;
-                    if (inPocket) {
-                        if (mGyroscopeSensor != null) {
-                            mOnTable =
-                                    false; // we can't have phone on table and pocket at the same time
-                        }
-                        unregisterGyroscopeEvent();
-                    } else {
-                        if (!mGyroscopeRegistered) {
-                            registerEventListeners();
-                        }
-                    }
-                    if (NotificationPeek.DEBUG) {
-                        Log.d(TAG, "In pocket: " + inPocket + ", old: " + mInPocket);
-                    }
-                    boolean oldInPocket = mInPocket;
-                    mInPocket = inPocket;
-                    if (mGyroscopeSensor == null) {
-                        mOnTable = mInPocket;
-                    }
-                    if (oldInPocket != inPocket) {
-                        mCallback.onPocketModeChanged(mInPocket);
-                    }
-                }
-            };
-        } else {
-            // ugh, that's bad, run now that you can
+    private void initGyroscopeSensor() {
+        // get gyroscope sensor for on-table detection
+        if (mUseGyroSensor) {
+            mGyroscopeSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         }
 
-
-        // get gyroscope sensor for on-table detection
-        mGyroscopeSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         if (mGyroscopeSensor != null) {
             mGyroscopeEventListener = new SensorEventListener() {
                 @Override
@@ -135,6 +115,13 @@ public class SensorActivityHandler {
                                     Log.d(TAG, "On table: false");
                                 }
                                 mOnTable = false;
+
+                                // If proximity/light sensor is not used, set mInPocket to the same
+                                // as mOnTable to synchronize status.
+                                if (!mUseProxLightSensor) {
+                                    mInPocket = mOnTable;
+                                }
+
                                 mCallback.onTableModeChanged(mOnTable);
                                 registerEventListeners();
                                 mWaitingForMovement = false;
@@ -145,11 +132,16 @@ public class SensorActivityHandler {
                             if (mSensorIncrement < INCREMENTS_TO_DISABLE) {
                                 mSensorIncrement++;
                                 if (mSensorIncrement == INCREMENTS_TO_DISABLE) {
-                                    unregisterProximityEvent();
+                                    unregisterProximityLightEvent();
                                     if (NotificationPeek.DEBUG) {
                                         Log.d(TAG, "On table: true");
                                     }
                                     mOnTable = true;
+
+                                    if (!mUseProxLightSensor) {
+                                        mInPocket = mOnTable;
+                                    }
+
                                     mCallback.onTableModeChanged(mOnTable);
                                     mWaitingForMovement = true;
                                 }
@@ -167,8 +159,86 @@ public class SensorActivityHandler {
             };
         } else {
             // no accelerometer? time to buy a nexus
-            // ...Or only listen to pocket mode...
-            mInPocket = true;
+        }
+    }
+
+    private void initProximityLightSensor() {
+        // get proximity sensor for in-pocket detection, if no proximity sensor detected, try
+        // light sensor.
+        if (mUseProxLightSensor) {
+            mProximityLightSensor =
+                    mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) != null ?
+                            mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY) :
+                            mSensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        }
+
+        if (mProximityLightSensor != null) {
+            mProximityEventListener = new SensorEventListener() {
+                @Override
+                public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+                }
+
+                @Override
+                public void onSensorChanged(SensorEvent event) {
+                    boolean inPocket = event.values[0] == 0;
+                    if (inPocket) {
+                        if (mUseGyroSensor) {
+                            mOnTable =
+                                    false; // we can't have phone on table and pocket at the same time
+                        }
+                        unregisterGyroscopeEvent();
+                    } else {
+                        // Only register gyroscope sensor listener if user chooses to use it.
+                        if (!mGyroscopeRegistered && mUseGyroSensor) {
+                            registerEventListeners();
+                        }
+                    }
+                    if (NotificationPeek.DEBUG) {
+                        Log.d(TAG, "In pocket: " + inPocket + ", old: " + mInPocket);
+                    }
+                    boolean oldInPocket = mInPocket;
+                    mInPocket = inPocket;
+                    if (!mUseGyroSensor) {
+                        mOnTable = mInPocket;
+                    }
+                    if (oldInPocket != inPocket) {
+                        mCallback.onPocketModeChanged(mInPocket);
+                    }
+                }
+            };
+        } else {
+            // ugh, that's bad, run now that you can.
+        }
+    }
+
+    public void updateUseSensors() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        boolean useGyro = preferences.getBoolean(PreferenceKeys.PREF_GYRO_SENSOR, true);
+        boolean useProxLight = preferences.getBoolean(PreferenceKeys.PREF_PROX_LIGHT_SENSOR, true);
+
+        if (useGyro == mUseGyroSensor && useProxLight == mUseProxLightSensor) {
+            // Same as current, return.
+            return;
+        }
+
+        mUseGyroSensor = useGyro;
+        mUseProxLightSensor = useProxLight;
+
+        if (!mUseGyroSensor) {
+            unregisterGyroscopeEvent();
+            mGyroscopeSensor = null;
+            mOnTable = false;
+        } else {
+            initGyroscopeSensor();
+        }
+
+        if (!mUseProxLightSensor) {
+            unregisterProximityLightEvent();
+            mProximityLightSensor = null;
+            mInPocket = false;
+        } else {
+            initProximityLightSensor();
         }
 
     }
@@ -186,6 +256,10 @@ public class SensorActivityHandler {
             IntentFilter intentFilter = new IntentFilter();
             intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
             intentFilter.addAction(Intent.ACTION_SCREEN_ON);
+
+            // Add intent filter for listening to sensor use changes.
+            intentFilter.addAction(ACTION_UPDATE_SENSOR_USE);
+
             mContext.registerReceiver(mScreenReceiver, intentFilter);
             mScreenReceiverRegistered = true;
         }
@@ -199,7 +273,7 @@ public class SensorActivityHandler {
     }
 
     public void registerEventListeners() {
-        if (!mProximityRegistered) {
+        if (mProximityLightSensor != null && !mProximityRegistered && mUseProxLightSensor) {
             if (NotificationPeek.DEBUG) {
                 Log.d(TAG, "Registering proximity polling");
             }
@@ -207,7 +281,7 @@ public class SensorActivityHandler {
                     SensorManager.SENSOR_DELAY_NORMAL);
             mProximityRegistered = true;
         }
-        if (mGyroscopeSensor != null && !mGyroscopeRegistered) {
+        if (mGyroscopeSensor != null && !mGyroscopeRegistered && mUseGyroSensor) {
             if (NotificationPeek.DEBUG) {
                 Log.d(TAG, "Registering gyroscope polling");
             }
@@ -218,12 +292,12 @@ public class SensorActivityHandler {
     }
 
     public void unregisterEventListeners() {
-        unregisterProximityEvent();
+        unregisterProximityLightEvent();
         unregisterGyroscopeEvent();
     }
 
-    private void unregisterProximityEvent() {
-        if (mProximityRegistered) {
+    private void unregisterProximityLightEvent() {
+        if (mProximityLightSensor != null && mProximityRegistered) {
             if (NotificationPeek.DEBUG) {
                 Log.d(TAG, "Unregistering proximity polling");
             }
@@ -262,10 +336,11 @@ public class SensorActivityHandler {
             } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
                 mCallback.onScreenStateChaged(true);
                 unregisterEventListeners();
-                mInPocket = false;
-                if (mGyroscopeSensor != null) {
-                    mOnTable = false;
-                }
+
+            } else if (intent.getAction().equals(ACTION_UPDATE_SENSOR_USE)) {
+                // Update sensor use preferences.
+                Log.d(TAG, "Update sensor uses");
+                updateUseSensors();
             }
         }
     }
