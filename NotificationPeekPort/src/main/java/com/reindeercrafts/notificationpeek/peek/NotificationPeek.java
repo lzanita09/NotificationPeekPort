@@ -212,6 +212,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         NotificationLayout rootView = new NotificationLayout(context);
         rootView.setOrientation(LinearLayout.VERTICAL);
         rootView.setNotificationPeek(NotificationPeek.this);
+        rootView.setId(1);
         mPeekView.addView(rootView);
 
         RelativeLayout.LayoutParams rootLayoutParams =
