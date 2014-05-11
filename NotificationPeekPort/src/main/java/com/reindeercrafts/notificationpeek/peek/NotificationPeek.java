@@ -510,12 +510,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     private void updateSelection(StatusBarNotification n) {
-        if (mShowing) {
-            //TODO: Find workaround for updating notificaiton icons when the activity is shown.
-            // Because of the thread, we cannot update notification icons here when the acivity
-            // is shown.
-            return;
-        }
+
         String oldNotif = PanelHelper
                 .getContentDescription((StatusBarNotification) mNotificationView.getTag());
         String newNotif = PanelHelper.getContentDescription(n);
