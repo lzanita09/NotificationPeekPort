@@ -72,7 +72,12 @@ public class NotificationService extends NotificationListenerService {
         boolean alwaysListening =
                 preferences.getBoolean(PreferenceKeys.PREF_ALWAYS_LISTENING, false);
 
-        mNotificationPeek.showNotification(sbn, false, peekTimeoutMultiplier, alwaysListening);
+        // Does user select always show content?
+        boolean alwaysShowContent =
+                preferences.getBoolean(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT, false);
+
+        mNotificationPeek.showNotification(sbn, false, peekTimeoutMultiplier, alwaysListening,
+                alwaysShowContent);
 
     }
 

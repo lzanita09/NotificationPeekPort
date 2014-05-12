@@ -16,6 +16,11 @@
                 android:title="@string/always_listening"
                 android:summary="@string/always_listening_sum"/>
 
+        <CheckBoxPreference
+                android:key="always_show_content"
+                android:defaultValue="false"
+                android:title="@string/always_show_content"
+                android:summary="@string/always_show_content_sum" />
 
         <ListPreference
                 android:key="peek_time_out"

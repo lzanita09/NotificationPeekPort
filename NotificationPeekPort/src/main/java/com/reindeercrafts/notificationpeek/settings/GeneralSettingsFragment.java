@@ -36,6 +36,11 @@ public class GeneralSettingsFragment extends PreferenceFragment
                 (CheckBoxPreference) findPreference(PreferenceKeys.PREF_ALWAYS_LISTENING);
         alwaysListeningPref.setOnPreferenceChangeListener(this);
 
+        // Always show content preference.
+        CheckBoxPreference alwaysShowContentPref =
+                (CheckBoxPreference) findPreference(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT);
+        alwaysListeningPref.setOnPreferenceChangeListener(this);
+
         // Notification Peek timeout preference.
         ListPreference peekTimeoutPref =
                 (ListPreference) findPreference(PreferenceKeys.PREF_PEEK_TIMEOUT);
@@ -65,7 +70,8 @@ public class GeneralSettingsFragment extends PreferenceFragment
             bindPreferenceSummaryToValue(preference);
 
         } else if (key.equals(PreferenceKeys.PREF_ALWAYS_LISTENING) ||
-                key.equals(PreferenceKeys.PREF_CLOCK)) {
+                key.equals(PreferenceKeys.PREF_CLOCK) ||
+                key.equals(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT)) {
             sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
 
         } else if (key.equals(PreferenceKeys.PREF_GYRO_SENSOR) ||

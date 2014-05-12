@@ -119,6 +119,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     // until user click screen.
     private boolean mListenForever;
 
+    // Display notification content regardless lock screen methods.
+    private boolean mShowContent;
+
     public NotificationPeek(NotificationHub notificationHub, Context context) {
         mNotificationHub = notificationHub;
         mContext = context;
@@ -307,7 +310,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     private boolean isKeyguardSecureShowing() {
-        return mKeyguardManager.isKeyguardLocked() && mKeyguardManager.isKeyguardSecure();
+        return !mShowContent &&
+                (mKeyguardManager.isKeyguardLocked() && mKeyguardManager.isKeyguardSecure());
     }
 
     public View getNotificationView() {
@@ -345,10 +349,20 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }, SCREEN_ON_START_DELAY + (NOTIFICATION_PEEK_TIME * mPeekTimeoutMultiplier * (long) 1.3));
     }
 
-    /* Show notification with up-to-date timeout and listen forever configurations. */
+
+    /**
+     * Show notification according to user preferences.
+     *
+     * @param n                     Notificaiton to display.
+     * @param update                If the given notification is an update.
+     * @param peekTimeoutMultiplier User preference: timeout.
+     * @param listenForever         User preference: always listening.
+     * @param showContent           User preference: always show content.
+     */
     public void showNotification(StatusBarNotification n, boolean update, int peekTimeoutMultiplier,
-                                 boolean listenForever) {
+                                 boolean listenForever, boolean showContent) {
         mListenForever = listenForever;
+        mShowContent = showContent;
         showNotification(n, update, peekTimeoutMultiplier);
     }
 
@@ -646,6 +660,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     public void unregisterScreenReceiver() {
         mSensorHandler.unregisterScreenReceiver();
+        mPeekView = null;
     }
 
     @Override
