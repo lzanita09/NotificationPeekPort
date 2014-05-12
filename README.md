@@ -26,7 +26,7 @@ Because the Device Administrator disables apps that is activated from being unin
 * Now you can uninstall the app.
 
 #### What is missing
-* Icon.
+* ~~Icon~~ (Icon from [Jeppe Foldager](https://plus.google.com/+JeppeFoldager/about)).
 * Name.
 * A lot of great features.
 
