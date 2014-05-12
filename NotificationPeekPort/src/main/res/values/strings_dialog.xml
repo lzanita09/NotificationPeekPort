@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_title" translatable="false"><![CDATA[
+        <b>%1$s</b>&nbsp;<br /><font color="#888888">%2$s</font>
+    ]]></string>
+    <string name="about_message"><![CDATA[
+        Port Paranoid Android\'s Notification Peek feature to an apk and make it compatible with any Kit-Kat ROM.
+        <h4>What it does</h4>
+        <p>Notification Peek (Paranoid Android) is a nice feature for displaying notifications in your lock screen. It uses gyroscope and proximity sensors to detect the status of the device and display the notifications in a minimalistic UI in the right time.</p>
+        <p>Developer: <a href="https://plus.google.com/+ZheLu/about">Zhe Lu</a></p>
+        <p>Icon/UI Designer: <a href="https://plus.google.com/+JeppeFoldager/about">Jeppe Foldager</a></p>
+        <h4>Source code: </h4>
+        <p><a href="https://github.com/lzanita09/NotificationPeekPort">Github</a></p>
+        <h4>Credits:</h4>
+        <p><a href="http://paranoidandroid.co/">Paranoid Android</a> and its open source <a href="https://github.com/AOSPA">AOSPA project</a></p>
+        <p><a href="https://github.com/AChep/AcDisplay">AcDisplay</a></p>
+        <br />
+        <br />
+    ]]></string>
+    <string name="help">Help</string>
+    <string name="help_msg"><![CDATA[
+      <h4>How to uninstall</h4>
+      <p>Because the Device Administrator disables apps that is activated from being uninstalled, you need to do the following if you want to uninstall the app:</p>
+      <p>1. Go to your System Settings.</p>
+      <p>2. Select <b>Security</b>.</p>
+      <p>3. Select <b>Device administrators</b>.</p>
+      <p>4. Uncheck NotificationPeek.</p>
+      <p>5. Now you can uninstall the app.</p>
+    ]]></string>
+</resources>

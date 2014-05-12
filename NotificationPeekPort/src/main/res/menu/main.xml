@@ -9,8 +9,15 @@
             app:showAsAction="never"/>
 
     <item
-            android:id="@+id/action_diagnosis"
-            android:title="@string/test_notification"
+            android:id="@+id/action_about"
+            android:title="@string/action_about"
             android:orderInCategory="101"
-            android:showAsAction="never" />
+            app:showAsAction="never"/>
+
+    <item
+            android:id="@+id/action_help"
+            android:title="@string/help"
+            android:orderInCategory="102"
+            app:showAsAction="never"/>
+
 </menu>

@@ -1,46 +1,153 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              tools:context="com.reindeercrafts.notificationpeek.MainActivity">
-
-    <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/instruction_text"
-            android:textAppearance="?android:textAppearanceLarge"
-            android:fontFamily="sans-serif-light"
-            android:layout_margin="@dimen/activity_vertical_margin"/>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context="com.reindeercrafts.notificationpeek.MainActivity">
 
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:showDividers="middle"
-            android:divider="?android:dividerHorizontal"
-            android:dividerPadding="@dimen/activity_horizontal_margin"
             android:orientation="vertical"
-            android:layout_centerInParent="true"
-            android:gravity="center">
-        <Button
+            android:layout_marginBottom="@dimen/activity_vertical_margin">
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:fontFamily="sans-serif-condensed"
+                android:text="@string/notification_peek_access"
+                android:layout_margin="@dimen/activity_vertical_margin"/>
+
+        <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/notification_access"
-                style="?android:borderlessButtonStyle"
-                android:padding="@dimen/activity_horizontal_margin"
-                android:gravity="center"
-                android:id="@+id/notification_access_btn"/>
+                android:orientation="horizontal"
+                android:background="?android:selectableItemBackground"
+                android:id="@+id/notification_access"
+                style="@style/MainPageItemStyle">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/notification_access"
+                    android:textAppearance="?android:textAppearanceLarge"
+                    android:fontFamily="sans-serif-light"
+                    android:layout_centerVertical="true"/>
+
+            <ImageView
+                    android:layout_width="@dimen/checkmark_width"
+                    android:layout_height="@dimen/checkmark_width"
+                    android:id="@+id/notification_access_checkbox"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/device_access"
+                style="@style/MainPageItemStyle">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/device_access"
+                    android:textAppearance="?android:textAppearanceLarge"
+                    android:fontFamily="sans-serif-light"
+                    android:layout_centerVertical="true"/>
+
+            <ImageView
+                    android:layout_width="@dimen/checkmark_width"
+                    android:layout_height="@dimen/checkmark_width"
+                    android:id="@+id/device_access_checkbox"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    />
+        </RelativeLayout>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/instruction_text"
+                android:fontFamily="sans-serif-condensed"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:layout_margin="@dimen/activity_vertical_margin"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sensor_states"
+                android:fontFamily="sans-serif-condensed"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:layout_margin="@dimen/activity_vertical_margin"/>
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/prox_light_sensor"
+                style="@style/MainPageItemStyle">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/prox_light_sensor"
+                    android:textAppearance="?android:textAppearanceLarge"
+                    android:fontFamily="sans-serif-light"
+                    android:layout_centerVertical="true"/>
+
+            <ImageView
+                    android:layout_width="@dimen/checkmark_width"
+                    android:layout_height="@dimen/checkmark_width"
+                    android:id="@+id/prox_light_check"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:id="@+id/gyro_sensor"
+                android:background="?android:selectableItemBackground"
+                style="@style/MainPageItemStyle">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/gyro_sensor"
+                    android:textAppearance="?android:textAppearanceLarge"
+                    android:fontFamily="sans-serif-light"
+                    android:layout_centerVertical="true"/>
+
+            <ImageView
+                    android:layout_width="@dimen/checkmark_width"
+                    android:layout_height="@dimen/checkmark_width"
+                    android:id="@+id/gyro_check"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"/>
+        </RelativeLayout>
 
         <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/device_access"
-                style="?android:borderlessButtonStyle"
-                android:padding="@dimen/activity_horizontal_margin"
-                android:gravity="center"
-                android:id="@+id/device_access_btn"/>
+                android:id="@+id/send_notification_btn"
+                android:text="@string/send_notification"
+                android:textAppearance="?android:textAppearanceMedium"
+                android:layout_marginTop="72dp"
+                android:layout_marginLeft="@dimen/activity_vertical_margin"
+                android:layout_marginRight="@dimen/activity_vertical_margin"
+                android:padding="@dimen/activity_vertical_margin"/>
+
 
     </LinearLayout>
 
 
+</ScrollView>
 
-</RelativeLayout>

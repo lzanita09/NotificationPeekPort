@@ -39,6 +39,10 @@ public class SensorActivityHandler {
     private final static int INCREMENTS_TO_DISABLE = 5;
     private final static float NOISE_THRESHOLD = 0.5f;
 
+    // Minimum proximity detected distance from object. Some devices use 0/1 to indicate
+    // "near"/"far", others use actual values.
+    private static final float MIN_PROX_DISTANCE = 5;
+
     private SensorManager mSensorManager;
     private SensorEventListener mProximityEventListener;
     private SensorEventListener mGyroscopeEventListener;
@@ -181,7 +185,7 @@ public class SensorActivityHandler {
 
                 @Override
                 public void onSensorChanged(SensorEvent event) {
-                    boolean inPocket = event.values[0] == 0;
+                    boolean inPocket = event.values[0] == 0 || event.values[0] <= MIN_PROX_DISTANCE;
                     if (inPocket) {
                         if (mUseGyroSensor) {
                             mOnTable =

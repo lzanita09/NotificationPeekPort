@@ -3,11 +3,13 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <!-- PA dimen -->
-    <dimen name="item_padding">5dp</dimen>
+    <dimen name="item_padding">4dp</dimen>
     <dimen name="small_notification_icon_size">30dp</dimen>
     <dimen name="small_notification_icon_padding">2dp</dimen>
     <dimen name="notification_icon_size">48dp</dimen>
     <dimen name="notification_text_width">300dp</dimen>
     <dimen name="clock_padding">10dp</dimen>
     <dimen name="clock_size">15dp</dimen>
+    <dimen name="checkmark_width">32dp</dimen>
+    <dimen name="generic_padding">8dp</dimen>
 </resources>

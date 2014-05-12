@@ -19,8 +19,8 @@
     <string name="peek_timeout_title">Notification Peek Timeout</string>
     <string name="always_listening">Always Listening</string>
     <string name="always_listening_sum">(Experimental) Set the sensor listeners to listen to device activities all the time and wake up the screen if necessary. </string>
-    <string name="instruction_start">To start, click the buttons below and enable Peek in both device administrators and notification access.</string>
-    <string name="instruction_ok">All accesses are enabled. Good to go!</string>
+    <string name="instruction_start">Accesses are disabled</string>
+    <string name="instruction_ok">Accesses are enabled</string>
     <string name="general_preferences">Notification preferences</string>
     <string name="sensor_preferences">Sensor Preferences</string>
     <string name="use_gyro">Use Gyroscope Sensor</string>
@@ -31,4 +31,11 @@
     <string name="disable_prox_light_sum">Stop listening to proximity/light sensor changes and display notification if necessary.</string>
     <string name="always_show_content">Always Display Content</string>
     <string name="always_show_content_sum">Always display notification content, regardless which screen lock method is used.</string>
+    <string name="prox_light_sensor">Proximity/Light Sensor</string>
+    <string name="gyro_sensor">Gyroscope Sensor</string>
+    <string name="notification_peek_access">Notification Peek Access</string>
+    <string name="action_about">About</string>
+    <string name="close">Close</string>
+    <string name="sensor_missing">Sensor is not found.</string>
+
 </resources>

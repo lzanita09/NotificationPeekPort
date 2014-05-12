@@ -10,6 +10,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
 import com.reindeercrafts.notificationpeek.R;
+import com.reindeercrafts.notificationpeek.SensorHelper;
 import com.reindeercrafts.notificationpeek.peek.SensorActivityHandler;
 
 /**
@@ -39,7 +40,7 @@ public class GeneralSettingsFragment extends PreferenceFragment
         // Always show content preference.
         CheckBoxPreference alwaysShowContentPref =
                 (CheckBoxPreference) findPreference(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT);
-        alwaysListeningPref.setOnPreferenceChangeListener(this);
+        alwaysShowContentPref.setOnPreferenceChangeListener(this);
 
         // Notification Peek timeout preference.
         ListPreference peekTimeoutPref =
@@ -50,13 +51,25 @@ public class GeneralSettingsFragment extends PreferenceFragment
         // Gyroscope sensor enable/disable preference.
         CheckBoxPreference gyroPref =
                 (CheckBoxPreference) findPreference(PreferenceKeys.PREF_GYRO_SENSOR);
-        gyroPref.setOnPreferenceChangeListener(this);
+        if (!SensorHelper.checkSensorStatus(getActivity(), SensorHelper.SENSOR_GYRO, false)) {
+            // No gyroscope sensor found.
+            gyroPref.setEnabled(false);
+        } else {
+            gyroPref.setEnabled(true);
+            gyroPref.setOnPreferenceChangeListener(this);
+        }
 
 
         // Proximity/Light sensor enable/disable preference.
         CheckBoxPreference proxPref =
                 (CheckBoxPreference) findPreference(PreferenceKeys.PREF_PROX_LIGHT_SENSOR);
-        proxPref.setOnPreferenceChangeListener(this);
+        if (!SensorHelper.checkSensorStatus(getActivity(), SensorHelper.SENSOR_PROXIMITY_LIGHT, false)) {
+            // No proximity or light sensor found.
+            proxPref.setEnabled(false);
+        } else {
+            proxPref.setEnabled(true);
+            proxPref.setOnPreferenceChangeListener(this);
+        }
 
     }
 
