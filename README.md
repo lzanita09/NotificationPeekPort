@@ -2,7 +2,7 @@ NotificationPeekPort
 ====================
 
 <img align="right" height="144"
-   src="https://github.com/lzanita09/NotificationPeekPort/blob/master/art/launcher_icon.png" />
+   src="https://raw.githubusercontent.com/lzanita09/NotificationPeekPort/master/art/launcher_icon.png" />
 
 Port Paranoid Android's Notification Peek feature to an apk and make it compatible with any Kit-Kat ROM. 
 
