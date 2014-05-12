@@ -1,6 +1,9 @@
 NotificationPeekPort
 ====================
 
+<img align="right" height="144"
+   src="https://github.com/lzanita09/NotificationPeekPort/art/launcher_icon.png" />
+
 Port Paranoid Android's Notification Peek feature to an apk and make it compatible with any Kit-Kat ROM. 
 
 You can grab the lastest build apk in the **[releases tab](https://github.com/lzanita09/NotificationPeekPort/releases)**.
@@ -28,7 +31,7 @@ Because the Device Administrator disables apps that is activated from being unin
 * A lot of great features.
 
 #### Known issue
-* If the Peek view is shown, it won't update new incoming notifications. 
+* If the Peek view is shown, it won't update new incoming notifications.
 
 #### Credits
 * **[Paranoid Android](http://paranoidandroid.co/)** and its open source **[AOSPA project](https://github.com/AOSPA)**.
