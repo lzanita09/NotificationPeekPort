@@ -8,8 +8,8 @@ Port Paranoid Android's Notification Peek feature to an apk and make it compatib
 
 You can grab the lastest build apk in the **[releases tab](https://github.com/lzanita09/NotificationPeekPort/releases)**.
 
-<img src="https://raw.githubusercontent.com/lzanita09/NotificationPeekPort/master/art/Screenshot_2014-05-12-17-13-41.png" />
-<img src="https://raw.githubusercontent.com/lzanita09/NotificationPeekPort/master/art/Screenshot_2014-05-12-17-13-31.png" />
+<img width="240" src="https://raw.githubusercontent.com/lzanita09/NotificationPeekPort/master/art/Screenshot_2014-05-12-17-13-41.png" />
+<img width="240" src="https://raw.githubusercontent.com/lzanita09/NotificationPeekPort/master/art/Screenshot_2014-05-12-17-14-31.png" />
 
 #### What it does
 Notification Peek (Paranoid Android) is a nice feature for displaying notifications in your lock screen. It uses gyroscope and proximity sensors to detect the status of the device and display the notifications in a minimalistic UI in the right time.
