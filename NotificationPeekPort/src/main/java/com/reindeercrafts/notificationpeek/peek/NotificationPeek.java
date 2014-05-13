@@ -63,6 +63,7 @@ import android.widget.TextView;
 import com.reindeercrafts.notificationpeek.NotificationHub;
 import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
+import com.reindeercrafts.notificationpeek.utils.UnlockGesture;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -86,7 +87,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private PowerManager mPowerManager;
     private DevicePolicyManager mDevicePolicyManager;
 
-    private GestureDetector mGestureDetector;
 
     private PowerManager.WakeLock mPartialWakeLock;
     private PowerManager.WakeLock mScreenWakeLock;
@@ -171,6 +171,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             }
         };
 
+
         mDevicePolicyManager =
                 (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
         mKeyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
@@ -203,15 +204,15 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 return super.onInterceptTouchEvent(event);
             }
         };
-        mPeekView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    dismissNotification();
-                }
-                return true;
-            }
-        });
+
+        // Setup double-tap gesture detector.
+        mPeekView.setOnTouchListener(UnlockGesture
+                .createTouchListener(mContext, new UnlockGesture.UnlockGestureCallback() {
+                    @Override
+                    public void onUnlocked() {
+                        dismissNotification();
+                    }
+                }));
 
 
         // root view
@@ -729,6 +730,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         private TextView mClockTextView;
 
         private NotificationPeekReceiver mReceiver;
+
+        private GestureDetector mGestureDetector;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
