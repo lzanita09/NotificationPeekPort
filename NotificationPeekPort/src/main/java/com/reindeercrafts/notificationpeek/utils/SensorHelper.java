@@ -1,4 +1,4 @@
-package com.reindeercrafts.notificationpeek;
+package com.reindeercrafts.notificationpeek.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -31,8 +31,8 @@ public class SensorHelper {
      * Check if the given sensor is presented in the device and/or the user choose to use it.
      *
      * @param context           Context instance.
-     * @param sensor            Sensor type, can be {@link com.reindeercrafts.notificationpeek.SensorHelper#SENSOR_GYRO}
-     *                          or {@link com.reindeercrafts.notificationpeek.SensorHelper#SENSOR_PROXIMITY_LIGHT}
+     * @param sensor            Sensor type, can be {@link SensorHelper#SENSOR_GYRO}
+     *                          or {@link SensorHelper#SENSOR_PROXIMITY_LIGHT}
      * @param combinePreference Boolean value for whether we need to check the preference or not.
      * @return
      */

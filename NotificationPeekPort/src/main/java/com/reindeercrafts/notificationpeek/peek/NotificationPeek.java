@@ -48,6 +48,7 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -84,6 +85,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private KeyguardManager mKeyguardManager;
     private PowerManager mPowerManager;
     private DevicePolicyManager mDevicePolicyManager;
+
+    private GestureDetector mGestureDetector;
 
     private PowerManager.WakeLock mPartialWakeLock;
     private PowerManager.WakeLock mScreenWakeLock;
@@ -386,7 +389,12 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         if (isNotificationActive(n) && (!update || (update && shouldDisplay))) {
             // update information
             updateNotificationIcons();
-            updateSelection(n);
+            if (!mShowing) {
+                //TODO: Find workaround for updating notificaiton icons when the activity is shown.
+                // Because of the thread, we cannot update notification icons here when the acivity
+                // is shown.
+                updateSelection(n);
+            }
 
             // check if phone is in the pocket or lying on a table
             if (mSensorHandler.isInPocket() || mSensorHandler.isOnTable()) {
@@ -494,8 +502,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         if (notificationCount <= 1) {
             mNotificationsContainer.setVisibility(View.GONE);
         }
-        for (int i = 0; i < notificationCount; i++) {
-            final StatusBarNotification n = mNotificationHub.getNotifications().get(i);
+
+        StatusBarNotification lastNotification = null;
+        for (StatusBarNotification notification : mNotificationHub.getNotifications().values()) {
+            final StatusBarNotification n = notification;
             ImageView icon = new ImageView(mContext);
             if (n.toString().equals(currentNotification)) {
                 foundCurrentNotification = true;
@@ -513,10 +523,16 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             GridLayout.LayoutParams gridLayoutParams =
                     new GridLayout.LayoutParams(linearLayoutParams);
             icon.setLayoutParams(gridLayoutParams);
+
+            if (lastNotification == null) {
+                lastNotification = n;
+            }
         }
+
+
         if (!foundCurrentNotification) {
             if (notificationCount > 0) {
-                updateSelection(mNotificationHub.getNotifications().get(notificationCount - 1));
+                updateSelection(lastNotification);
             } else {
                 dismissNotification();
             }
@@ -567,13 +583,14 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     private boolean isNotificationActive(StatusBarNotification n) {
-        for (int i = 0; i < mNotificationHub.getNotificationCount(); i++) {
-            if (PanelHelper.getContentDescription(n).equals(PanelHelper
-                            .getContentDescription(mNotificationHub.getNotifications().get(i))
-            )) {
+
+        for (StatusBarNotification notification : mNotificationHub.getNotifications().values()) {
+            if (PanelHelper.getContentDescription(n)
+                    .equals(PanelHelper.getContentDescription(notification))) {
                 return true;
             }
         }
+
         return false;
     }
 

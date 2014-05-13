@@ -4,8 +4,7 @@ import android.service.notification.StatusBarNotification;
 
 import com.reindeercrafts.notificationpeek.peek.PanelHelper;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashMap;
 
 /**
  * A data structure for storing currently unread notifications. The notification data
@@ -20,10 +19,12 @@ public class NotificationHub {
     private static final String TAG = NotificationHub.class.getSimpleName();
     private static NotificationHub INSTANCE;
     private StatusBarNotification mCurrentNotification;
-    private ArrayList<StatusBarNotification> mNotifications;
+
+    // Use HashMap to store only the latest notification for a given app.
+    private HashMap<String, StatusBarNotification> mNotifications;
 
     private NotificationHub() {
-        mNotifications = new ArrayList<StatusBarNotification>();
+        mNotifications = new HashMap<String, StatusBarNotification>();
     }
 
     public static NotificationHub getInstance() {
@@ -34,7 +35,7 @@ public class NotificationHub {
         return INSTANCE;
     }
 
-    public ArrayList<StatusBarNotification> getNotifications() {
+    public HashMap<String, StatusBarNotification> getNotifications() {
         return mNotifications;
     }
 
@@ -51,20 +52,11 @@ public class NotificationHub {
     }
 
     public void addNotification(StatusBarNotification notification) {
-        mNotifications.add(notification);
+        mNotifications.put(notification.getPackageName(), notification);
     }
 
     public void removeNotification(StatusBarNotification notification) {
-
-        // Direct equalTo() doesn't work for StatusBarNotification. I have to
-        // change to comparing package name. (This will remove all notification
-        // having the same package name)
-        Iterator<StatusBarNotification> it = mNotifications.iterator();
-        while (it.hasNext()) {
-            if (it.next().getPackageName().equals(notification.getPackageName())) {
-                it.remove();
-            }
-        }
+        mNotifications.remove(notification.getPackageName());
 
         // If the notification we are to remove is equal to mCurrentNotification, remove the
         // reference.

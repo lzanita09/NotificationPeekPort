@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.reindeercrafts.notificationpeek.dialogs.DialogHelper;
 import com.reindeercrafts.notificationpeek.settings.Settings;
 import com.reindeercrafts.notificationpeek.utils.AccessChecker;
+import com.reindeercrafts.notificationpeek.utils.SensorHelper;
 
 
 public class MainActivity extends Activity implements View.OnClickListener {
