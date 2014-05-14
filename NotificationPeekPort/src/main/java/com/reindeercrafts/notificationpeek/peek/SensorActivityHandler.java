@@ -41,7 +41,7 @@ public class SensorActivityHandler {
 
     // Minimum proximity detected distance from object. Some devices use 0/1 to indicate
     // "near"/"far", others use actual values.
-    private static final float MIN_PROX_DISTANCE = 5;
+    private static final float MIN_PROX_DISTANCE = 3.0f;
 
     private SensorManager mSensorManager;
     private SensorEventListener mProximityEventListener;

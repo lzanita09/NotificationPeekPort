@@ -504,7 +504,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }
 
         StatusBarNotification lastNotification = null;
-        for (StatusBarNotification notification : mNotificationHub.getNotifications().values()) {
+        for (StatusBarNotification notification : mNotificationHub.getNotifications()) {
             final StatusBarNotification n = notification;
             ImageView icon = new ImageView(mContext);
             if (n.toString().equals(currentNotification)) {
@@ -584,7 +584,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     private boolean isNotificationActive(StatusBarNotification n) {
 
-        for (StatusBarNotification notification : mNotificationHub.getNotifications().values()) {
+        for (StatusBarNotification notification : mNotificationHub.getNotifications()) {
             if (PanelHelper.getContentDescription(n)
                     .equals(PanelHelper.getContentDescription(notification))) {
                 return true;

@@ -4,7 +4,11 @@ import android.service.notification.StatusBarNotification;
 
 import com.reindeercrafts.notificationpeek.peek.PanelHelper;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * A data structure for storing currently unread notifications. The notification data
@@ -35,8 +39,15 @@ public class NotificationHub {
         return INSTANCE;
     }
 
-    public HashMap<String, StatusBarNotification> getNotifications() {
-        return mNotifications;
+    /**
+     * Sort the StatusBarNotifications stored in the HashMap with their posted time.
+     *
+     * @return A sorted List of StatusBarNotification.
+     */
+    public List<StatusBarNotification> getNotifications() {
+        List<StatusBarNotification> list = new ArrayList<StatusBarNotification>(mNotifications.values());
+        Collections.sort(list, new NotificationTimeComparator());
+        return list;
     }
 
     public int getNotificationCount() {
@@ -63,6 +74,16 @@ public class NotificationHub {
         if (PanelHelper.getContentDescription(notification)
                 .equals(PanelHelper.getContentDescription(mCurrentNotification))) {
             mCurrentNotification = null;
+        }
+
+    }
+
+
+    private class NotificationTimeComparator implements Comparator<StatusBarNotification> {
+        @Override
+        public int compare(StatusBarNotification lhs, StatusBarNotification rhs) {
+
+            return lhs.getPostTime() > rhs.getPostTime() ? 1 : -1;
         }
 
     }
