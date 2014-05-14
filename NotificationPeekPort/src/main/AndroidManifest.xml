@@ -24,7 +24,8 @@
         <activity android:name=".peek.NotificationPeek$NotificationPeekActivity"
                   android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
                   android:configChanges="orientation|keyboard"
-                  android:excludeFromRecents="true"/>
+                  android:excludeFromRecents="true"
+                  android:screenOrientation="portrait"/>
 
         <activity
                 android:name="com.reindeercrafts.notificationpeek.MainActivity"

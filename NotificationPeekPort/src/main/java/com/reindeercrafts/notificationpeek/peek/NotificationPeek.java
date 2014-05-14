@@ -48,7 +48,6 @@ import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -730,8 +729,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         private TextView mClockTextView;
 
         private NotificationPeekReceiver mReceiver;
-
-        private GestureDetector mGestureDetector;
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
