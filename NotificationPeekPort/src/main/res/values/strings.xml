@@ -18,7 +18,7 @@
     <string name="show_clock_title">Show Clock</string>
     <string name="peek_timeout_title">Notification Peek Timeout</string>
     <string name="always_listening">Always Listening</string>
-    <string name="always_listening_sum">(Experimental) Set the sensor listeners to listen to device activities all the time and wake up the screen if necessary. </string>
+    <string name="always_listening_sum">(Experimental) Set the sensor listeners to listen to device activities (as long as there is a notification) and wake up the screen if necessary. </string>
     <string name="instruction_start">Accesses are disabled</string>
     <string name="instruction_ok">Accesses are enabled</string>
     <string name="general_preferences">Notification preferences</string>
