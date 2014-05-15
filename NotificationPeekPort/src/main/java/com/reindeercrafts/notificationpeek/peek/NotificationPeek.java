@@ -179,9 +179,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 getClass().getSimpleName() + "_partial");
 
         // Screen dim wakelock for waking up screen.
-        mScreenWakeLock = mPowerManager
-                .newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
-                        getClass().getSimpleName() + "_screen");
+        mScreenWakeLock = mPowerManager.newWakeLock(
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                getClass().getSimpleName() + "_screen");
 
         TelephonyManager telephonyManager =
                 (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
@@ -439,7 +439,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         if (!mShowing) {
             mShowing = true;
             Intent intent = new Intent(mContext, NotificationPeekActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                            Intent.FLAG_ACTIVITY_NO_HISTORY |
+                            Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mContext.startActivity(intent);
         }
     }

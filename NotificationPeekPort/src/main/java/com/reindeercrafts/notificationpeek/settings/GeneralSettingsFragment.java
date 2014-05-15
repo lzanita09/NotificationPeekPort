@@ -10,8 +10,8 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
 import com.reindeercrafts.notificationpeek.R;
-import com.reindeercrafts.notificationpeek.utils.SensorHelper;
 import com.reindeercrafts.notificationpeek.peek.SensorActivityHandler;
+import com.reindeercrafts.notificationpeek.utils.SensorHelper;
 
 /**
  * General settings fragment.
