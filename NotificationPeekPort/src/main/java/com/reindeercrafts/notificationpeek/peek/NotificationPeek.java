@@ -79,7 +79,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private static final long SCREEN_ON_START_DELAY = 300; // 300 ms
     private static final long REMOVE_VIEW_DELAY = 300; // 300 ms
     private static final int COL_NUM = 10;
-    private static final long SCREEN_WAKELOCK_TIMEOUT = 1000; // 1 sec
+    private static final long SCREEN_WAKELOCK_TIMEOUT = 2000; // 1 sec
 
     private SensorActivityHandler mSensorHandler;
     private KeyguardManager mKeyguardManager;
@@ -180,7 +180,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
         // Screen dim wakelock for waking up screen.
         mScreenWakeLock = mPowerManager
-                .newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                .newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
                         getClass().getSimpleName() + "_screen");
 
         TelephonyManager telephonyManager =
