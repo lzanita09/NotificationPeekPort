@@ -2,7 +2,7 @@ package com.reindeercrafts.notificationpeek;
 
 import android.service.notification.StatusBarNotification;
 
-import com.reindeercrafts.notificationpeek.peek.PanelHelper;
+import com.reindeercrafts.notificationpeek.peek.NotificationHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,8 +71,8 @@ public class NotificationHub {
 
         // If the notification we are to remove is equal to mCurrentNotification, remove the
         // reference.
-        if (PanelHelper.getContentDescription(notification)
-                .equals(PanelHelper.getContentDescription(mCurrentNotification))) {
+        if (NotificationHelper.getContentDescription(notification)
+                .equals(NotificationHelper.getContentDescription(mCurrentNotification))) {
             mCurrentNotification = null;
         }
 

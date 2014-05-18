@@ -21,7 +21,7 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".peek.NotificationPeek$NotificationPeekActivity"
+        <activity android:name=".peek.NotificationPeekActivity"
                   android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
                   android:configChanges="orientation|keyboard"
                   android:excludeFromRecents="true"

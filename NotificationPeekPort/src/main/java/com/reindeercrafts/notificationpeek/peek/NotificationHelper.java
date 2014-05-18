@@ -17,19 +17,35 @@
 package com.reindeercrafts.notificationpeek.peek;
 
 import android.app.Notification;
+import android.content.Context;
 import android.graphics.LightingColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-public class PanelHelper {
+public class NotificationHelper {
 
     public final static String DELIMITER = "|";
 
+    private TelephonyManager mTelephonyManager;
+    private NotificationPeek mPeek;
+
+    public boolean mRingingOrConnected = false;
+
+    private Context mContext;
+
+    public NotificationHelper(Context context, NotificationPeek peek) {
+        mContext = context;
+        mPeek = peek;
+        mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+        mTelephonyManager.listen(new CallStateListener(), PhoneStateListener.LISTEN_CALL_STATE);
+    }
 
     // Static methods
 
@@ -45,14 +61,16 @@ public class PanelHelper {
             // if the new one isn't.
             String oldNotificationText = getNotificationTitle(oldNotif);
             String newNotificationText = getNotificationTitle(newNotif);
-            if (newNotificationText == null ?
-                    oldNotificationText != null : !newNotificationText.equals(oldNotificationText))
+            if (newNotificationText == null ? oldNotificationText != null : !newNotificationText
+                    .equals(oldNotificationText)) {
                 return true;
+            }
 
             // Last chance, check when the notifications were posted. If times
             // are equal, we shouldn't display the new notification.
-            if (oldNotif.getNotification().when != newNotif.getNotification().when)
+            if (oldNotif.getNotification().when != newNotif.getNotification().when) {
                 return true;
+            }
             return false;
         }
         return true;
@@ -70,7 +88,8 @@ public class PanelHelper {
 
     public static String getContentDescription(StatusBarNotification content) {
         if (content != null) {
-            return content.getPackageName() + DELIMITER + content.getId();
+            String tag = content.getTag() == null ? "null" : content.getTag();
+            return content.getPackageName() + DELIMITER + content.getId() + DELIMITER + tag;
         }
         return null;
     }
@@ -104,4 +123,37 @@ public class PanelHelper {
             }
         };
     }
+
+    /**
+     * <!-- Peek -->
+     * Call state listener
+     * Telephony states booleans
+     */
+    private class CallStateListener extends PhoneStateListener {
+        @Override
+        public void onCallStateChanged(int state, String incomingNumber) {
+            switch (state) {
+                case TelephonyManager.CALL_STATE_RINGING:
+                case TelephonyManager.CALL_STATE_OFFHOOK:
+                    mRingingOrConnected = true;
+                    break;
+                case TelephonyManager.CALL_STATE_IDLE:
+                    mRingingOrConnected = false;
+                    break;
+            }
+        }
+    }
+
+    public boolean isRingingOrConnected() {
+        return mRingingOrConnected;
+    }
+
+    public boolean isSimPanelShowing() {
+        int state = mTelephonyManager.getSimState();
+        return state == TelephonyManager.SIM_STATE_PIN_REQUIRED
+                || state == TelephonyManager.SIM_STATE_PUK_REQUIRED
+                || state == TelephonyManager.SIM_STATE_NETWORK_LOCKED;
+    }
+
+
 }

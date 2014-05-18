@@ -17,42 +17,25 @@
 package com.reindeercrafts.notificationpeek.peek;
 
 import android.animation.LayoutTransition;
-import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
-import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -60,18 +43,24 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.reindeercrafts.notificationpeek.NotificationHub;
+import com.reindeercrafts.notificationpeek.NotificationService;
 import com.reindeercrafts.notificationpeek.R;
-import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
+import com.reindeercrafts.notificationpeek.utils.NotificationPeekViewUtils;
 import com.reindeercrafts.notificationpeek.utils.UnlockGesture;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class NotificationPeek implements SensorActivityHandler.SensorChangedCallback {
 
     private final static String TAG = "NotificationPeek";
     public final static boolean DEBUG = true;
+
+    public static final int NOTIFICATION_LAYOUT_ID = 1;
+    public static final int NOTIFICATION_VIEW_ID = 2;
+    public static final int NOTIFICATION_ICON_ID = 3;
+    public static final int NOTIFICATION_TEXT_ID = 4;
+    public static final int NOTIFICATION_CONTAINER_ID = 5;
 
     private static final float ICON_LOW_OPACITY = 0.3f;
     private static final int NOTIFICATION_PEEK_TIME = 5000; // 5 secs
@@ -81,11 +70,11 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private static final int COL_NUM = 10;
     private static final long SCREEN_WAKELOCK_TIMEOUT = 2000; // 1 sec
 
+
     private SensorActivityHandler mSensorHandler;
     private KeyguardManager mKeyguardManager;
     private PowerManager mPowerManager;
     private DevicePolicyManager mDevicePolicyManager;
-
 
     private PowerManager.WakeLock mPartialWakeLock;
     private PowerManager.WakeLock mScreenWakeLock;
@@ -94,10 +83,11 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private Handler mWakeLockHandler;
     private Handler mHandler;
 
+    static RelativeLayout sPeekView;
+
     private List<StatusBarNotification> mShownNotifications =
             new ArrayList<StatusBarNotification>();
     private StatusBarNotification mNextNotification;
-    private static RelativeLayout mPeekView;
     private LinearLayout mNotificationView;
     private GridLayout mNotificationsContainer;
     private ImageView mNotificationIcon;
@@ -105,7 +95,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     private Context mContext;
 
-    private boolean mRingingOrConnected;
     private boolean mShowing;
     private boolean mEnabled = true;
     private boolean mAnimating;
@@ -124,9 +113,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     // Display notification content regardless lock screen methods.
     private boolean mShowContent;
 
+    private NotificationHelper mNotificationHelper;
+
     public NotificationPeek(NotificationHub notificationHub, Context context) {
         mNotificationHub = notificationHub;
         mContext = context;
+
+        mNotificationHelper = new NotificationHelper(context, this);
 
         mSensorHandler = new SensorActivityHandler(context, this);
         mHandler = new Handler(Looper.getMainLooper());
@@ -183,12 +176,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 PowerManager.SCREEN_BRIGHT_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP,
                 getClass().getSimpleName() + "_screen");
 
-        TelephonyManager telephonyManager =
-                (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        telephonyManager.listen(new CallStateListener(), PhoneStateListener.LISTEN_CALL_STATE);
-
         // build the layout
-        mPeekView = new RelativeLayout(context) {
+        sPeekView = new RelativeLayout(context) {
             @Override
             public boolean onInterceptTouchEvent(MotionEvent event) {
                 int action = event.getAction();
@@ -205,7 +194,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         };
 
         // Setup double-tap gesture detector.
-        mPeekView.setOnTouchListener(UnlockGesture
+        sPeekView.setOnTouchListener(UnlockGesture
                 .createTouchListener(mContext, new UnlockGesture.UnlockGestureCallback() {
                     @Override
                     public void onUnlocked() {
@@ -218,8 +207,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         NotificationLayout rootView = new NotificationLayout(context);
         rootView.setOrientation(LinearLayout.VERTICAL);
         rootView.setNotificationPeek(NotificationPeek.this);
-        rootView.setId(1);
-        mPeekView.addView(rootView);
+        rootView.setId(NOTIFICATION_LAYOUT_ID);
+        sPeekView.addView(rootView);
 
         RelativeLayout.LayoutParams rootLayoutParams =
                 new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -231,15 +220,19 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         // notification container
         mNotificationView = new LinearLayout(context);
         mNotificationView.setOrientation(LinearLayout.VERTICAL);
+        mNotificationView.setId(NOTIFICATION_VIEW_ID);
         rootView.addView(mNotificationView);
 
         // current notification icon
         mNotificationIcon = new ImageView(context);
+        mNotificationIcon.setId(NOTIFICATION_ICON_ID);
         mNotificationIcon.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        mNotificationIcon.setOnTouchListener(PanelHelper.getHighlightTouchListener(Color.DKGRAY));
+        mNotificationIcon.setOnTouchListener(
+                NotificationHelper.getHighlightTouchListener(Color.DKGRAY));
 
         // current notification text
         mNotificationText = new TextView(context);
+        mNotificationText.setId(NOTIFICATION_TEXT_ID);
         Typeface textTypeface = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
         mNotificationText.setTypeface(textTypeface);
         mNotificationText.setGravity(Gravity.CENTER);
@@ -281,6 +274,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 return true;
             }
         };
+        mNotificationsContainer.setId(NOTIFICATION_CONTAINER_ID);
         mNotificationsContainer.setColumnCount(COL_NUM);
         mNotificationsContainer.setOrientation(LinearLayout.HORIZONTAL);
         mNotificationsContainer.setPadding(0,
@@ -293,7 +287,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         transitioner.disableTransitionType(LayoutTransition.CHANGE_APPEARING);
         mNotificationsContainer.setLayoutTransition(transitioner);
 
-        mPeekView.addView(mNotificationsContainer);
+        sPeekView.addView(mNotificationsContainer);
 
         RelativeLayout.LayoutParams notificationsLayoutParams =
                 new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -382,7 +376,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
         if (!mEnabled /* peek is disabled */ || (mPowerManager.isScreenOn() && !mShowing) /* no peek when screen is on */ ||
                 !shouldDisplay /* notification has already been displayed */ || !n.isClearable() /* persistent notification */ ||
-                mRingingOrConnected /* is phone ringing? */) {
+                mNotificationHelper.isRingingOrConnected() /* is phone ringing? */ ||
+                mNotificationHelper.isSimPanelShowing() /* is sim pin lock screen is shown? */) {
             return;
         }
 
@@ -440,9 +435,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             mShowing = true;
             Intent intent = new Intent(mContext, NotificationPeekActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                            Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                            Intent.FLAG_ACTIVITY_NO_HISTORY |
-                            Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                    Intent.FLAG_ACTIVITY_NO_HISTORY |
+                    Intent.FLAG_ACTIVITY_NO_ANIMATION);
             mContext.startActivity(intent);
         }
     }
@@ -465,8 +460,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     public void addNotification(StatusBarNotification n) {
         for (int i = 0; i < mShownNotifications.size(); i++) {
-            if (PanelHelper.getContentDescription(n)
-                    .equals(PanelHelper.getContentDescription(mShownNotifications.get(i)))) {
+            if (NotificationHelper.getContentDescription(n)
+                    .equals(NotificationHelper.getContentDescription(mShownNotifications.get(i)))) {
                 mShownNotifications.set(i, n);
                 return;
             }
@@ -476,8 +471,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     public void removeNotification(StatusBarNotification n) {
         for (int i = 0; i < mShownNotifications.size(); i++) {
-            if (PanelHelper.getContentDescription(n)
-                    .equals(PanelHelper.getContentDescription(mShownNotifications.get(i)))) {
+            if (NotificationHelper.getContentDescription(n)
+                    .equals(NotificationHelper.getContentDescription(mShownNotifications.get(i)))) {
                 mShownNotifications.remove(i);
                 i--;
             }
@@ -516,7 +511,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 icon.setAlpha(ICON_LOW_OPACITY);
             }
             icon.setPadding(padding, 0, padding, 0);
-            icon.setImageDrawable(getIconFromResource(n));
+            icon.setImageDrawable(NotificationPeekViewUtils.getIconFromResource(mContext, n));
             icon.setTag(n);
             mNotificationsContainer.addView(icon);
             LinearLayout.LayoutParams linearLayoutParams =
@@ -544,17 +539,18 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     private void updateSelection(StatusBarNotification n) {
 
-        String oldNotif = PanelHelper
+        String oldNotif = NotificationHelper
                 .getContentDescription((StatusBarNotification) mNotificationView.getTag());
-        String newNotif = PanelHelper.getContentDescription(n);
+        String newNotif = NotificationHelper.getContentDescription(n);
         boolean sameNotification = newNotif.equals(oldNotif);
         if (!mAnimating || sameNotification) {
             // update big icon
             Bitmap b = n.getNotification().largeIcon;
             if (b != null) {
-                mNotificationIcon.setImageBitmap(getRoundedShape(b));
+                mNotificationIcon.setImageBitmap(NotificationPeekViewUtils.getRoundedShape(b));
             } else {
-                mNotificationIcon.setImageDrawable(getIconFromResource(n));
+                mNotificationIcon.setImageDrawable(
+                        NotificationPeekViewUtils.getIconFromResource(mContext, n));
             }
             final PendingIntent contentIntent = n.getNotification().contentIntent;
             if (contentIntent != null) {
@@ -563,11 +559,14 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             } else {
                 mNotificationIcon.setOnClickListener(null);
             }
-            mNotificationText.setText(getNotificationDisplayText(n));
+            mNotificationText
+                    .setText(NotificationPeekViewUtils.getNotificationDisplayText(mContext, n));
             mNotificationText.setVisibility(isKeyguardSecureShowing() ? View.GONE : View.VISIBLE);
             mNotificationView.setTag(n);
 
-            if (!sameNotification) {
+            // If the notification view is moved before, we need to restore its position before
+            // displaying new notification.
+            if (!sameNotification || mNotificationView.getX() != 0) {
                 mNotificationView.setAlpha(1f);
                 mNotificationView.setX(0);
             }
@@ -576,7 +575,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         // update small icons
         for (int i = 0; i < mNotificationsContainer.getChildCount(); i++) {
             ImageView view = (ImageView) mNotificationsContainer.getChildAt(i);
-            if ((mAnimating ? oldNotif : newNotif).equals(PanelHelper
+            if ((mAnimating ? oldNotif : newNotif).equals(NotificationHelper
                     .getContentDescription((StatusBarNotification) view.getTag()))) {
                 view.setAlpha(1f);
             } else {
@@ -588,8 +587,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private boolean isNotificationActive(StatusBarNotification n) {
 
         for (StatusBarNotification notification : mNotificationHub.getNotifications()) {
-            if (PanelHelper.getContentDescription(n)
-                    .equals(PanelHelper.getContentDescription(notification))) {
+            if (NotificationHelper.getContentDescription(n)
+                    .equals(NotificationHelper.getContentDescription(notification))) {
                 return true;
             }
         }
@@ -602,9 +601,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             return false;
         }
         for (StatusBarNotification shown : mShownNotifications) {
-            if (PanelHelper.getContentDescription(n)
-                    .equals(PanelHelper.getContentDescription(shown))) {
-                return PanelHelper.shouldDisplayNotification(shown, n);
+            if (NotificationHelper.getContentDescription(n)
+                    .equals(NotificationHelper.getContentDescription(shown))) {
+                return NotificationHelper.shouldDisplayNotification(shown, n);
             }
         }
         return true;
@@ -623,64 +622,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         return null;
     }
 
-    private String getNotificationDisplayText(StatusBarNotification n) {
-        String text = null;
-        if (n.getNotification().tickerText != null) {
-            text = n.getNotification().tickerText.toString();
-        }
-        PackageManager pm = mContext.getPackageManager();
-        if (n != null) {
-            if (text == null) {
-                text = PanelHelper.getNotificationTitle(n);
-                if (text == null) {
-                    try {
-                        ApplicationInfo ai = pm.getApplicationInfo(n.getPackageName(), 0);
-                        text = (String) pm.getApplicationLabel(ai);
-                    } catch (NameNotFoundException e) {
-                        // application is uninstalled, run away
-                        text = "";
-                    }
-                }
-            }
-        }
-        return text;
-    }
-
-    public Bitmap getRoundedShape(Bitmap scaleBitmapImage) {
-        int targetWidth = scaleBitmapImage.getWidth();
-        int targetHeight = scaleBitmapImage.getHeight();
-        Bitmap targetBitmap =
-                Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888);
-
-        Canvas canvas = new Canvas(targetBitmap);
-        Path path = new Path();
-        path.addCircle(((float) targetWidth - 1) / 2, ((float) targetHeight - 1) / 2,
-                (Math.min(((float) targetWidth), ((float) targetHeight)) / 2), Path.Direction.CCW);
-
-        canvas.clipPath(path);
-        Bitmap sourceBitmap = scaleBitmapImage;
-        canvas.drawBitmap(sourceBitmap,
-                new Rect(0, 0, sourceBitmap.getWidth(), sourceBitmap.getHeight()),
-                new Rect(0, 0, targetWidth, targetHeight), null);
-        return targetBitmap;
-    }
-
-    private Drawable getIconFromResource(StatusBarNotification n) {
-        Drawable icon;
-        String packageName = n.getPackageName();
-        int resource = n.getNotification().icon;
-        try {
-            Context remotePackageContext = mContext.createPackageContext(packageName, 0);
-            icon = remotePackageContext.getResources().getDrawable(resource);
-        } catch (NameNotFoundException nnfe) {
-            icon = new BitmapDrawable(mContext.getResources(), n.getNotification().largeIcon);
-        }
-        return icon;
-    }
-
     public void unregisterScreenReceiver() {
         mSensorHandler.unregisterScreenReceiver();
-        mPeekView = null;
+        sPeekView = null;
     }
 
     @Override
@@ -720,125 +664,28 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }
     }
 
-
     /**
-     * This class is used to display the Notification Peek layout. The original implementation
-     * uses Window and directly added layout to it, but it seems impossible to do so externally.
-     * <p/>
-     * This class also controls waking up the device and removing Peek layout from its parent.
+     * Send broadcast to NotificationService, and let it perform the final dismiss action.
+     *
+     * @param pkg package name associated with the notification to be dismissed.
+     * @param tag tag associated with the notification to be dismissed.
+     * @param id  notification id associated with the notification to be dismissed.
      */
-    public static class NotificationPeekActivity extends Activity {
+    public void onChildDismissed(String description, String pkg, String tag, int id) {
+        // Send broadcast to NotificationService for dismiss action.
+        Intent intent = new Intent(NotificationService.DISMISS_NOTIFICATION);
+        intent.putExtra(NotificationService.EXTRA_PACKAGE_NAME, pkg);
+        intent.putExtra(NotificationService.EXTRA_NOTIFICATION_TAG, tag);
+        intent.putExtra(NotificationService.EXTRA_NOTIFICATION_ID, id);
+        mContext.sendBroadcast(intent);
 
-        private TextView mClockTextView;
-
-        private NotificationPeekReceiver mReceiver;
-
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-
-            getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                            WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-            );
-
-            super.onCreate(savedInstanceState);
-
-            setContentView(mPeekView);
-
-            boolean showClock = PreferenceManager.getDefaultSharedPreferences(this)
-                    .getBoolean(PreferenceKeys.PREF_CLOCK, true);
-
-            if (showClock) {
-                mClockTextView = (TextView) PeekLayoutFactory
-                        .createPeekLayout(this, PeekLayoutFactory.LAYOUT_TYPE_CLOCK);
-                mPeekView.addView(mClockTextView);
-                mClockTextView.setText(getCurrentTimeText());
-            }
-
-            mPeekView.setAlpha(1f);
-            mPeekView.setVisibility(View.VISIBLE);
-            mPeekView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE |
-                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN |
-                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            );
-
-            // Initialize broadcast receiver.
-            initReceiver();
-        }
-
-        private void initReceiver() {
-
-            mReceiver = new NotificationPeekReceiver();
-            IntentFilter filter = new IntentFilter();
-            filter.addAction(NotificationPeekReceiver.ACTION_DISMISS);
-            // Add time tick intent only when the clock is shown.
-            if (mClockTextView != null) {
-                filter.addAction(Intent.ACTION_TIME_TICK);
-            }
-
-            registerReceiver(mReceiver, filter);
-        }
-
-        @Override
-        protected void onDestroy() {
-            super.onDestroy();
-
-            // Remove mPeekView from its parent so that it can be reused.
-            ViewGroup parent = (ViewGroup) mPeekView.getParent();
-            parent.removeView(mPeekView);
-
-            try {
-                // Remove Clock only when it is displayed.
-                if (mClockTextView != null) {
-                    mPeekView.removeView(mClockTextView);
-                }
-                unregisterReceiver(mReceiver);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-        }
-
-        /**
-         * Get formatted time String (Follows system setting).
-         *
-         * @return Formatted time String.
-         */
-        private String getCurrentTimeText() {
-            return android.text.format.DateFormat.getTimeFormat(this).format(new Date());
-        }
-
-        private class NotificationPeekReceiver extends BroadcastReceiver {
-
-
-            public static final String ACTION_DISMISS = "NotificationPeek.dismiss_notification";
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(ACTION_DISMISS)) {
-                    finish();
-                } else if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
-                    mClockTextView.setText(getCurrentTimeText());
-                }
-            }
-        }
-
-    }
-
-    private class CallStateListener extends PhoneStateListener {
-        @Override
-        public void onCallStateChanged(int state, String incomingNumber) {
-            switch (state) {
-                case TelephonyManager.CALL_STATE_RINGING:
-                case TelephonyManager.CALL_STATE_OFFHOOK:
-                    mRingingOrConnected = true;
-                    break;
-                case TelephonyManager.CALL_STATE_IDLE:
-                    mRingingOrConnected = false;
-                    break;
-            }
-        }
+        // Send broadcast to NotificationPeekActivity for updating NotificationView.
+        Intent updateViewIntent = new Intent(
+                NotificationPeekActivity.NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION);
+        updateViewIntent
+                .putExtra(NotificationPeekActivity.NotificationPeekReceiver.EXTRA_NOTIFICATION_DESCRIPTION,
+                        description);
+        mContext.sendBroadcast(updateViewIntent);
     }
 
     public class NotificationClicker implements View.OnClickListener {
