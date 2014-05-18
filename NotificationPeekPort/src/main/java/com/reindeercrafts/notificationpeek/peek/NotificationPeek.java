@@ -227,8 +227,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         mNotificationIcon = new ImageView(context);
         mNotificationIcon.setId(NOTIFICATION_ICON_ID);
         mNotificationIcon.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        mNotificationIcon.setOnTouchListener(
-                NotificationHelper.getHighlightTouchListener(Color.DKGRAY));
+        mNotificationIcon
+                .setOnTouchListener(NotificationHelper.getHighlightTouchListener(Color.DKGRAY));
 
         // current notification text
         mNotificationText = new TextView(context);
@@ -445,8 +445,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     public void dismissNotification() {
         if (mShowing) {
             mShowing = false;
-            mContext.sendBroadcast(
-                    new Intent(NotificationPeekActivity.NotificationPeekReceiver.ACTION_DISMISS));
+            mContext.sendBroadcast(new Intent(
+                    NotificationPeekActivity.NotificationPeekReceiver.ACTION_DISMISS));
 
             if (mPartialWakeLock.isHeld()) {
                 if (DEBUG) {
@@ -554,7 +554,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             }
             final PendingIntent contentIntent = n.getNotification().contentIntent;
             if (contentIntent != null) {
-                final View.OnClickListener listener = new NotificationClicker(contentIntent, n);
+                final View.OnClickListener listener = new NotificationClicker(n, this);
                 mNotificationIcon.setOnClickListener(listener);
             } else {
                 mNotificationIcon.setOnClickListener(null);
@@ -682,37 +682,17 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         // Send broadcast to NotificationPeekActivity for updating NotificationView.
         Intent updateViewIntent = new Intent(
                 NotificationPeekActivity.NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION);
-        updateViewIntent
-                .putExtra(NotificationPeekActivity.NotificationPeekReceiver.EXTRA_NOTIFICATION_DESCRIPTION,
-                        description);
+        updateViewIntent.putExtra(
+                NotificationPeekActivity.NotificationPeekReceiver.EXTRA_NOTIFICATION_DESCRIPTION,
+                description);
         mContext.sendBroadcast(updateViewIntent);
     }
 
-    public class NotificationClicker implements View.OnClickListener {
-
-        private PendingIntent mPendingIntent;
-
-        private StatusBarNotification mNotification;
-
-        public NotificationClicker(PendingIntent mPendingIntent,
-                                   StatusBarNotification notification) {
-            this.mPendingIntent = mPendingIntent;
-            this.mNotification = notification;
-        }
-
-        @Override
-        public void onClick(View v) {
-            try {
-                mPendingIntent.send();
-                dismissNotification();
-                // Reset mOnTable and mInPocket for next notification.
-                removeNotification(mNotification);
-                mSensorHandler.unregisterEventListeners();
-                mNextNotification = null;
-            } catch (PendingIntent.CanceledException e) {
-                e.printStackTrace();
-            }
-        }
+    /* Called after click event is triggered, used to clean up event listeners and
+     * set mNextNotification to null. */
+    public void onPostClick() {
+        mSensorHandler.unregisterEventListeners();
+        mNextNotification = null;
     }
 
 

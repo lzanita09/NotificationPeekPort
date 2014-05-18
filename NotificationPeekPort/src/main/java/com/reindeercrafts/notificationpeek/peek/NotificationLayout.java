@@ -67,6 +67,10 @@ public class NotificationLayout extends LinearLayout implements SwipeHelper.Call
         mNotificationPeek = peek;
     }
 
+    public NotificationPeek getNotificationPeek() {
+        return mNotificationPeek;
+    }
+
     @Override
     public View getChildAtPosition(MotionEvent ev) {
         return getChildContentView(null);

@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
 import android.view.View;
@@ -32,10 +33,13 @@ import java.util.Date;
  */
 public class NotificationPeekActivity extends Activity {
 
+    private static final long LOCK_DELAY = 200; // 200 ms
     private TextView mClockTextView;
     private NotificationPeekReceiver mReceiver;
 
     private RelativeLayout mPeekView;
+
+    private NotificationPeek mPeek;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +75,11 @@ public class NotificationPeekActivity extends Activity {
 
         // Initialize broadcast receiver.
         initReceiver();
+
+        // Retrieve NotificationPeek object.
+        NotificationLayout notificationView = (NotificationLayout) mPeekView
+                .findViewById(NotificationPeek.NOTIFICATION_LAYOUT_ID);
+        mPeek = notificationView.getNotificationPeek();
     }
 
     private void initReceiver() {
@@ -165,6 +174,11 @@ public class NotificationPeekActivity extends Activity {
             // Set new tag.
             notificationView.setTag(nextNotification);
 
+            if (nextNotification.getNotification().contentIntent != null) {
+                final View.OnClickListener listener =
+                        new NotificationClicker(nextNotification, mPeek);
+                notificationIcon.setOnClickListener(listener);
+            }
 
             if (nextNotificationIndex == 0) {
                 // As we already moved the next notification to 'Current Notification' spot, we need
@@ -194,6 +208,30 @@ public class NotificationPeekActivity extends Activity {
         return -1;
     }
 
+    /**
+     * Release partial wake lock from NotificationPeek object and
+     * lock screen.
+     */
+    private void lockScreen() {
+
+        // Lock screen by a fixed delay, otherwise sometimes the screen will turn on again
+        // showing the lock screen UI.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // Release partial wake lock.
+                mPeek.dismissNotification();
+
+                DevicePolicyManager devicePolicyManager =
+                        (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
+                devicePolicyManager.lockNow();
+            }
+        }, LOCK_DELAY);
+
+
+    }
+
+
     public class NotificationPeekReceiver extends BroadcastReceiver {
 
         // Action for updating notification peek view.
@@ -212,10 +250,7 @@ public class NotificationPeekActivity extends Activity {
             } else if (intent.getAction().equals(ACTION_UPDATE_NOTIFICATION)) {
                 String description = intent.getStringExtra(EXTRA_NOTIFICATION_DESCRIPTION);
                 if (!updateNotification(description)) {
-                    DevicePolicyManager devicePolicyManager =
-                            (DevicePolicyManager) getSystemService(DEVICE_POLICY_SERVICE);
-                    devicePolicyManager.lockNow();
-                    finish();
+                    lockScreen();
                 }
             } else if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
                 mClockTextView.setText(getCurrentTimeText());
