@@ -11,12 +11,6 @@
                 android:summaryOff="@string/hide_clock"/>
 
         <CheckBoxPreference
-                android:key="always_listening"
-                android:defaultValue="false"
-                android:title="@string/always_listening"
-                android:summary="@string/always_listening_sum"/>
-
-        <CheckBoxPreference
                 android:key="always_show_content"
                 android:defaultValue="false"
                 android:title="@string/always_show_content"
@@ -24,9 +18,17 @@
 
         <ListPreference
                 android:key="peek_time_out"
+                android:defaultValue="1"
                 android:title="@string/peek_timeout_title"
                 android:entries="@array/peek_time_out_entries"
                 android:entryValues="@array/peek_time_out_entry_values"/>
+
+        <ListPreference
+                android:key="sensor_time_out"
+                android:defaultValue="1"
+                android:title="@string/sensor_timeout"
+                android:entries="@array/sensor_time_out_entries"
+                android:entryValues="@array/sensor_time_out_entry_values"/>
     </PreferenceCategory>
 
     <PreferenceCategory

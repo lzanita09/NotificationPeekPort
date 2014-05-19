@@ -69,6 +69,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private static final long REMOVE_VIEW_DELAY = 300; // 300 ms
     private static final int COL_NUM = 10;
     private static final long SCREEN_WAKELOCK_TIMEOUT = 2000; // 1 sec
+    private static final int SENSOR_TIME_OUT_INFINITE = -1;
 
 
     private SensorActivityHandler mSensorHandler;
@@ -106,9 +107,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     // Peek timeout multiplier, the final peek timeout period is 5000 * mPeekTimeoutMultiplier.
     private int mPeekTimeoutMultiplier;
 
-    // Experimental feature: not removing mNextNotification, let listeners to listen all the time
-    // until user click screen.
-    private boolean mListenForever;
+    // Sensor listener timeout, the final sensor timeout period is 10000 * mSensorTimeoutMultiplier.
+    private int mSensorTimeoutMultiplier;
 
     // Display notification content regardless lock screen methods.
     private boolean mShowContent;
@@ -299,9 +299,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     }
 
-    /* If mListenForever is true, we don't remove listeners, but let them keep listening. */
+    /* If mSensorTimeoutMultiplier is -1, we don't remove listeners, but let them keep listening. */
     private void tryUnregisterEventListeners() {
-        if (!mListenForever) {
+        if (mSensorTimeoutMultiplier != SENSOR_TIME_OUT_INFINITE) {
             mSensorHandler.unregisterEventListeners();
         }
     }
@@ -353,19 +353,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
      * @param n                     Notificaiton to display.
      * @param update                If the given notification is an update.
      * @param peekTimeoutMultiplier User preference: timeout.
-     * @param listenForever         User preference: always listening.
+     * @param sensorTimeout         User preference: sensor timeout.
      * @param showContent           User preference: always show content.
      */
     public void showNotification(StatusBarNotification n, boolean update, int peekTimeoutMultiplier,
-                                 boolean listenForever, boolean showContent) {
-        mListenForever = listenForever;
+                                 int sensorTimeout, boolean showContent) {
+        mSensorTimeoutMultiplier = sensorTimeout;
         mShowContent = showContent;
-        showNotification(n, update, peekTimeoutMultiplier);
-    }
-
-    /* Show notification with up-to-date timeout */
-    public void showNotification(StatusBarNotification n, boolean update,
-                                 int peekTimeoutMultiplier) {
         mPeekTimeoutMultiplier = peekTimeoutMultiplier;
         showNotification(n, update, false);
     }
@@ -415,7 +409,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                 }
 
                 mWakeLockHandler.removeCallbacks(mPartialWakeLockRunnable);
-                mWakeLockHandler.postDelayed(mPartialWakeLockRunnable, PARTIAL_WAKELOCK_TIME);
+
+                // If always listening is selected, we still release the wake lock in 10 sec, but
+                // we do not unregister sensor listeners.
+                int multiplier = Math.max(1, mSensorTimeoutMultiplier);
+
+                mWakeLockHandler
+                        .postDelayed(mPartialWakeLockRunnable, PARTIAL_WAKELOCK_TIME * multiplier);
 
                 mNextNotification = n;
                 return;
@@ -445,8 +445,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     public void dismissNotification() {
         if (mShowing) {
             mShowing = false;
-            mContext.sendBroadcast(new Intent(
-                    NotificationPeekActivity.NotificationPeekReceiver.ACTION_DISMISS));
+            mContext.sendBroadcast(
+                    new Intent(NotificationPeekActivity.NotificationPeekReceiver.ACTION_DISMISS));
 
             if (mPartialWakeLock.isHeld()) {
                 if (DEBUG) {
@@ -632,7 +632,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         // If we set to use always listening, if we detect the device is out of pocket,
         // we restore mNextNotification, and let showNotification to decide whether it is active
         // or not.
-        if (inPocket && mListenForever && mNextNotification == null) {
+        if (inPocket && mSensorTimeoutMultiplier == SENSOR_TIME_OUT_INFINITE &&
+                mNextNotification == null) {
             mNextNotification = mNotificationHub.getCurrentNotification();
         }
         if (!inPocket && mNextNotification != null) {
@@ -646,7 +647,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         // If we set to use always listening, if we detect the device is held on hand,
         // we restore mNextNotification, and let showNotification to decide whether it is active
         // or not.
-        if (!onTable && mListenForever && mNextNotification == null) {
+        if (!onTable && mSensorTimeoutMultiplier == SENSOR_TIME_OUT_INFINITE &&
+                mNextNotification == null) {
             mNextNotification = mNotificationHub.getCurrentNotification();
         }
 
@@ -673,7 +675,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
      */
     public void onChildDismissed(String description, String pkg, String tag, int id) {
         // Send broadcast to NotificationService for dismiss action.
-        Intent intent = new Intent(NotificationService.DISMISS_NOTIFICATION);
+        Intent intent = new Intent(NotificationService.ACTION_DISMISS_NOTIFICATION);
         intent.putExtra(NotificationService.EXTRA_PACKAGE_NAME, pkg);
         intent.putExtra(NotificationService.EXTRA_NOTIFICATION_TAG, tag);
         intent.putExtra(NotificationService.EXTRA_NOTIFICATION_ID, id);

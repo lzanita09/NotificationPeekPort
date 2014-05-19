@@ -9,6 +9,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
+import com.reindeercrafts.notificationpeek.NotificationService;
 import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.peek.SensorActivityHandler;
 import com.reindeercrafts.notificationpeek.utils.SensorHelper;
@@ -32,10 +33,7 @@ public class GeneralSettingsFragment extends PreferenceFragment
                 (CheckBoxPreference) findPreference(PreferenceKeys.PREF_CLOCK);
         clockPref.setOnPreferenceChangeListener(this);
 
-        // Listen forever preference.
-        CheckBoxPreference alwaysListeningPref =
-                (CheckBoxPreference) findPreference(PreferenceKeys.PREF_ALWAYS_LISTENING);
-        alwaysListeningPref.setOnPreferenceChangeListener(this);
+
 
         // Always show content preference.
         CheckBoxPreference alwaysShowContentPref =
@@ -47,6 +45,12 @@ public class GeneralSettingsFragment extends PreferenceFragment
                 (ListPreference) findPreference(PreferenceKeys.PREF_PEEK_TIMEOUT);
         peekTimeoutPref.setOnPreferenceChangeListener(this);
         bindPreferenceSummaryToValue(peekTimeoutPref);
+
+        // Listen forever preference.
+        ListPreference sensorTimeoutPref =
+                (ListPreference) findPreference(PreferenceKeys.PREF_SENSOR_TIMEOUT);
+        sensorTimeoutPref.setOnPreferenceChangeListener(this);
+        bindPreferenceSummaryToValue(sensorTimeoutPref);
 
         // Gyroscope sensor enable/disable preference.
         CheckBoxPreference gyroPref =
@@ -63,7 +67,8 @@ public class GeneralSettingsFragment extends PreferenceFragment
         // Proximity/Light sensor enable/disable preference.
         CheckBoxPreference proxPref =
                 (CheckBoxPreference) findPreference(PreferenceKeys.PREF_PROX_LIGHT_SENSOR);
-        if (!SensorHelper.checkSensorStatus(getActivity(), SensorHelper.SENSOR_PROXIMITY_LIGHT, false)) {
+        if (!SensorHelper
+                .checkSensorStatus(getActivity(), SensorHelper.SENSOR_PROXIMITY_LIGHT, false)) {
             // No proximity or light sensor found.
             proxPref.setEnabled(false);
         } else {
@@ -78,22 +83,32 @@ public class GeneralSettingsFragment extends PreferenceFragment
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
         String key = preference.getKey();
-        if (key.equals(PreferenceKeys.PREF_PEEK_TIMEOUT)) {
+        if (key.equals(PreferenceKeys.PREF_PEEK_TIMEOUT) ||
+                key.equals(PreferenceKeys.PREF_SENSOR_TIMEOUT)) {
             sharedPref.edit().putString(key, (String) newValue).apply();
             bindPreferenceSummaryToValue(preference);
 
-        } else if (key.equals(PreferenceKeys.PREF_ALWAYS_LISTENING) ||
-                key.equals(PreferenceKeys.PREF_CLOCK) ||
-                key.equals(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT)) {
+        } else if (key.equals(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT)) {
             sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
 
+        } else if (key.equals(PreferenceKeys.PREF_CLOCK)) {
+            sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
+            return true;
         } else if (key.equals(PreferenceKeys.PREF_GYRO_SENSOR) ||
                 key.equals(PreferenceKeys.PREF_PROX_LIGHT_SENSOR)) {
             sharedPref.edit().putBoolean(key, (Boolean) newValue).apply();
 
             // Send broadcast to request update sensor use changes.
             getActivity().sendBroadcast(new Intent(SensorActivityHandler.ACTION_UPDATE_SENSOR_USE));
+            return true;
         }
+
+        // Send broadcast to NotificationService to update preferences.
+        Intent intent = new Intent(NotificationService.ACTION_PREFERENCE_CHANGED);
+        intent.putExtra(PreferenceKeys.INTENT_ACTION_KEY, key);
+        intent.putExtra(PreferenceKeys.INTENT_ACTION_NEW_VALUE, newValue.toString());
+        getActivity().sendBroadcast(intent);
+
         return true;
     }
 

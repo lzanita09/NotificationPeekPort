@@ -27,11 +27,21 @@ public class NotificationService extends NotificationListenerService {
     private static final String TAG = NotificationService.class.getSimpleName();
     private static final int INVAID_ID = -1;
 
-    public static final String DISMISS_NOTIFICATION =
+    public static final String ACTION_DISMISS_NOTIFICATION =
             NotificationActionReceiver.class.getSimpleName() + ".dismiss_notification";
+
+    public static final String ACTION_PREFERENCE_CHANGED =
+            NotificationService.class.getSimpleName() + ".preference_changed";
+
+
     public static final String EXTRA_PACKAGE_NAME = "PackageName";
     public static final String EXTRA_NOTIFICATION_ID = "NotificationId";
     public static final String EXTRA_NOTIFICATION_TAG = "NotificationTag";
+
+    private int mPeekTimeoutMultiplier;
+    private int mSensorTimeoutMultiplier;
+    private boolean mShowContent;
+
 
     private NotificationHub mNotificationHub;
     private NotificationPeek mNotificationPeek;
@@ -44,6 +54,18 @@ public class NotificationService extends NotificationListenerService {
         super.onCreate();
         mNotificationHub = NotificationHub.getInstance();
         mNotificationPeek = new NotificationPeek(mNotificationHub, this);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        // Retrieve user specified peek timeout.
+        mPeekTimeoutMultiplier =
+                Integer.parseInt(preferences.getString(PreferenceKeys.PREF_PEEK_TIMEOUT, "1"));
+
+        // Does user select always listening?
+        mSensorTimeoutMultiplier =
+                Integer.parseInt(preferences.getString(PreferenceKeys.PREF_SENSOR_TIMEOUT, "1"));
+
+        // Does user select always show content?
+        mShowContent = preferences.getBoolean(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT, false);
 
         registerNotificationActionReceiver();
     }
@@ -66,22 +88,9 @@ public class NotificationService extends NotificationListenerService {
 
         mNotificationHub.setCurrentNotification(sbn);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Retrieve user specified peek timeout.
-        int peekTimeoutMultiplier =
-                Integer.parseInt(preferences.getString(PreferenceKeys.PREF_PEEK_TIMEOUT, "1"));
-
-        // Does user select always listening?
-        boolean alwaysListening =
-                preferences.getBoolean(PreferenceKeys.PREF_ALWAYS_LISTENING, false);
-
-        // Does user select always show content?
-        boolean alwaysShowContent =
-                preferences.getBoolean(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT, false);
-
-        mNotificationPeek.showNotification(sbn, false, peekTimeoutMultiplier, alwaysListening,
-                alwaysShowContent);
+        mNotificationPeek
+                .showNotification(sbn, false, mPeekTimeoutMultiplier, mSensorTimeoutMultiplier,
+                        mShowContent);
 
     }
 
@@ -115,7 +124,8 @@ public class NotificationService extends NotificationListenerService {
     private void registerNotificationActionReceiver() {
         mReceiver = new NotificationActionReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(DISMISS_NOTIFICATION);
+        intentFilter.addAction(ACTION_DISMISS_NOTIFICATION);
+        intentFilter.addAction(ACTION_PREFERENCE_CHANGED);
 
         registerReceiver(mReceiver, intentFilter);
     }
@@ -124,11 +134,27 @@ public class NotificationService extends NotificationListenerService {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(DISMISS_NOTIFICATION)) {
+            String action = intent.getAction();
+            if (action.equals(ACTION_DISMISS_NOTIFICATION)) {
                 String packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME);
                 String tag = intent.getStringExtra(EXTRA_NOTIFICATION_TAG);
                 int id = intent.getIntExtra(EXTRA_NOTIFICATION_ID, INVAID_ID);
                 cancelNotification(packageName, tag, id);
+            } else if (action.equals(ACTION_PREFERENCE_CHANGED)) {
+
+                // Update user preferences.
+                String changedKey = intent.getStringExtra(PreferenceKeys.INTENT_ACTION_KEY);
+                String newValue = intent.getStringExtra(PreferenceKeys.INTENT_ACTION_NEW_VALUE);
+
+                Log.d(TAG, "Key: " + changedKey + ", value: " + newValue );
+
+                if (changedKey.equals(PreferenceKeys.PREF_PEEK_TIMEOUT)) {
+                    mPeekTimeoutMultiplier = Integer.parseInt(newValue);
+                } else if (changedKey.equals(PreferenceKeys.PREF_SENSOR_TIMEOUT)) {
+                    mSensorTimeoutMultiplier = Integer.parseInt(newValue);
+                } else if (changedKey.equals(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT)) {
+                    mShowContent = Boolean.parseBoolean(newValue);
+                }
             }
         }
     }

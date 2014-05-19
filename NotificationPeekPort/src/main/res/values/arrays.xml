@@ -17,4 +17,18 @@
         <item>5</item>
         <item>6</item>
     </string-array>
+
+    <string-array name="sensor_time_out_entries">
+        <item>10 sec</item>
+        <item>20 sec</item>
+        <item>30 sec</item>
+        <item>Always listening</item>
+    </string-array>
+    
+    <string-array name="sensor_time_out_entry_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>-1</item>
+    </string-array>
 </resources>
