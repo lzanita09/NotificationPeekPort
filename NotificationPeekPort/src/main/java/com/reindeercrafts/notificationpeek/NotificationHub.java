@@ -64,6 +64,7 @@ public class NotificationHub {
 
     public void addNotification(StatusBarNotification notification) {
         mNotifications.put(notification.getPackageName(), notification);
+        setCurrentNotification(notification);
     }
 
     public void removeNotification(StatusBarNotification notification) {

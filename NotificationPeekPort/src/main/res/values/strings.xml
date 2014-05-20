@@ -37,5 +37,6 @@
     <string name="action_about">About</string>
     <string name="close">Close</string>
     <string name="sensor_missing">Sensor is not found.</string>
+    <string name="device_admin_missing">Peek is not activated in Device Administrator. Please enable it first.</string>
 
 </resources>

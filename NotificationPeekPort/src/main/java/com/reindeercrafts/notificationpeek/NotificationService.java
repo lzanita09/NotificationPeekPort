@@ -13,6 +13,7 @@ import android.util.Log;
 
 import com.reindeercrafts.notificationpeek.peek.NotificationPeek;
 import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
+import com.reindeercrafts.notificationpeek.utils.AccessChecker;
 
 
 /**
@@ -86,11 +87,11 @@ public class NotificationService extends NotificationListenerService {
 
         mNotificationHub.addNotification(sbn);
 
-        mNotificationHub.setCurrentNotification(sbn);
-
-        mNotificationPeek
-                .showNotification(sbn, false, mPeekTimeoutMultiplier, mSensorTimeoutMultiplier,
-                        mShowContent);
+        if (AccessChecker.isDeviceAdminEnabled(this)) {
+            mNotificationPeek
+                    .showNotification(sbn, false, mPeekTimeoutMultiplier, mSensorTimeoutMultiplier,
+                            mShowContent);
+        }
 
     }
 
@@ -146,7 +147,7 @@ public class NotificationService extends NotificationListenerService {
                 String changedKey = intent.getStringExtra(PreferenceKeys.INTENT_ACTION_KEY);
                 String newValue = intent.getStringExtra(PreferenceKeys.INTENT_ACTION_NEW_VALUE);
 
-                Log.d(TAG, "Key: " + changedKey + ", value: " + newValue );
+                Log.d(TAG, "Key: " + changedKey + ", value: " + newValue);
 
                 if (changedKey.equals(PreferenceKeys.PREF_PEEK_TIMEOUT)) {
                     mPeekTimeoutMultiplier = Integer.parseInt(newValue);

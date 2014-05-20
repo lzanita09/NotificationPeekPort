@@ -19,6 +19,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.reindeercrafts.notificationpeek.dialogs.DialogHelper;
 import com.reindeercrafts.notificationpeek.settings.Settings;
@@ -120,7 +121,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-
     /**
      * Lock device screen and send test notification.
      */
@@ -208,7 +208,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 break;
 
             case R.id.send_notification_btn:
-                sendTestNotification();
+                if (AccessChecker.isDeviceAdminEnabled(this)) {
+                    sendTestNotification();
+                } else {
+                    Toast.makeText(this, R.string.device_admin_missing, Toast.LENGTH_SHORT).show();
+                }
                 break;
 
             case R.id.prox_light_sensor:
