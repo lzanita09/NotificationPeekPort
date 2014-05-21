@@ -35,7 +35,7 @@ Because the Device Administrator disables apps that is activated from being unin
 * A lot of great features.
 
 #### Known issue
-* 
+* Compatibility issue with Whatsapp.
 
 #### Credits
 * **[Paranoid Android](http://paranoidandroid.co/)** and its open source **[AOSPA project](https://github.com/AOSPA)**.
