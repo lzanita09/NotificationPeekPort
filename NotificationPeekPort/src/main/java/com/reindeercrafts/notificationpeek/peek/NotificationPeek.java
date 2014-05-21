@@ -61,8 +61,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     public static final int NOTIFICATION_ICON_ID = 3;
     public static final int NOTIFICATION_TEXT_ID = 4;
     public static final int NOTIFICATION_CONTAINER_ID = 5;
+    public static final float ICON_LOW_OPACITY = 0.3f;
 
-    private static final float ICON_LOW_OPACITY = 0.3f;
     private static final int NOTIFICATION_PEEK_TIME = 5000; // 5 secs
     private static final int PARTIAL_WAKELOCK_TIME = 10000; // 10 secs
     private static final long SCREEN_ON_START_DELAY = 300; // 300 ms
@@ -315,6 +315,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         return mNotificationView;
     }
 
+    public NotificationHub getNotificationHub() {
+        return mNotificationHub;
+    }
+
     public void setAnimating(boolean animating) {
         mAnimating = animating;
     }
@@ -379,10 +383,11 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             // update information
             updateNotificationIcons();
             if (!mShowing) {
-                //TODO: Find workaround for updating notificaiton icons when the activity is shown.
-                // Because of the thread, we cannot update notification icons here when the acivity
-                // is shown.
                 updateSelection(n);
+            } else {
+                mContext.sendBroadcast(new Intent(
+                        NotificationPeekActivity.
+                                NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION_ICONS));
             }
 
             // check if phone is in the pocket or lying on a table
@@ -446,7 +451,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         if (mShowing) {
             mShowing = false;
             mContext.sendBroadcast(
-                    new Intent(NotificationPeekActivity.NotificationPeekReceiver.ACTION_DISMISS));
+                    new Intent(NotificationPeekActivity.NotificationPeekReceiver.ACTION_FINISH_PEEK));
 
             if (mPartialWakeLock.isHeld()) {
                 if (DEBUG) {
@@ -482,9 +487,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
     public void updateNotificationIcons() {
         if (mShowing) {
-            //TODO: Find workaround for updating notificaiton icons when the activity is shown.
-            // Because of the thread, we cannot update notification icons here when the acivity
-            // is shown.
             return;
         }
         mNotificationsContainer.removeAllViews();
@@ -683,7 +685,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
         // Send broadcast to NotificationPeekActivity for updating NotificationView.
         Intent updateViewIntent = new Intent(
-                NotificationPeekActivity.NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION);
+                NotificationPeekActivity.NotificationPeekReceiver.ACTION_DIMISS_NOTIFICATION);
         updateViewIntent.putExtra(
                 NotificationPeekActivity.NotificationPeekReceiver.EXTRA_NOTIFICATION_DESCRIPTION,
                 description);

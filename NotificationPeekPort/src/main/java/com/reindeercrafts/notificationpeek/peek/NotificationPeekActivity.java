@@ -17,9 +17,12 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.GridLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.reindeercrafts.notificationpeek.NotificationHub;
+import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 import com.reindeercrafts.notificationpeek.utils.NotificationPeekViewUtils;
 
@@ -40,6 +43,8 @@ public class NotificationPeekActivity extends Activity {
     private NotificationPeekReceiver mReceiver;
 
     private RelativeLayout mPeekView;
+    private GridLayout mNotificationsContainer;
+    private View mNotificationView;
 
     private NotificationPeek mPeek;
 
@@ -54,6 +59,9 @@ public class NotificationPeekActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         mPeekView = NotificationPeek.sPeekView;
+        mNotificationsContainer =
+                (GridLayout) mPeekView.findViewById(NotificationPeek.NOTIFICATION_CONTAINER_ID);
+        mNotificationView = mPeekView.findViewById(NotificationPeek.NOTIFICATION_VIEW_ID);
 
         setContentView(mPeekView);
 
@@ -86,8 +94,9 @@ public class NotificationPeekActivity extends Activity {
 
         mReceiver = new NotificationPeekReceiver();
         IntentFilter filter = new IntentFilter();
-        filter.addAction(NotificationPeekReceiver.ACTION_DISMISS);
-        filter.addAction(NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION);
+        filter.addAction(NotificationPeekReceiver.ACTION_FINISH_PEEK);
+        filter.addAction(NotificationPeekReceiver.ACTION_DIMISS_NOTIFICATION);
+        filter.addAction(NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION_ICONS);
         // Add time tick intent only when the clock is shown.
         if (mClockTextView != null) {
             filter.addAction(Intent.ACTION_TIME_TICK);
@@ -133,28 +142,25 @@ public class NotificationPeekActivity extends Activity {
      * False if the notification we just swipe away is the last unread notification.
      */
     private boolean updateNotification(String description) {
-        GridLayout notificationContainer =
-                (GridLayout) mPeekView.findViewById(NotificationPeek.NOTIFICATION_CONTAINER_ID);
+
         ImageView notificationIcon =
                 (ImageView) mPeekView.findViewById(NotificationPeek.NOTIFICATION_ICON_ID);
         TextView notificationTextView =
                 (TextView) mPeekView.findViewById(NotificationPeek.NOTIFICATION_TEXT_ID);
-        View notificationView = mPeekView.findViewById(NotificationPeek.NOTIFICATION_VIEW_ID);
 
 
         int currentNotificationIdex =
-                getCurrentNotificationIndex(notificationContainer, description);
+                getCurrentNotificationIndex(mNotificationsContainer, description);
 
         // Remove the current notification from container.
-        notificationContainer.removeViewAt(currentNotificationIdex);
+        mNotificationsContainer.removeViewAt(currentNotificationIdex);
 
-        int nextNotificationIndex = notificationContainer.getChildCount() - 1;
+        int nextNotificationIndex = mNotificationsContainer.getChildCount() - 1;
 
         // We have more than one unread notification.
         if (nextNotificationIndex >= 0) {
-            StatusBarNotification nextNotification =
-                    (StatusBarNotification) notificationContainer.getChildAt(nextNotificationIndex)
-                            .getTag();
+            StatusBarNotification nextNotification = (StatusBarNotification) mNotificationsContainer
+                    .getChildAt(nextNotificationIndex).getTag();
 
             if (nextNotification.getNotification().largeIcon != null) {
                 notificationIcon.setImageBitmap(NotificationPeekViewUtils
@@ -168,11 +174,11 @@ public class NotificationPeekActivity extends Activity {
                     NotificationPeekViewUtils.getNotificationDisplayText(this, nextNotification));
 
             // Animate back icon and text.
-            notificationView.setTranslationX(0);
-            notificationView.animate().alpha(1f).start();
+            mNotificationView.setTranslationX(0);
+            mNotificationView.animate().alpha(1f).start();
 
             // Set new tag.
-            notificationView.setTag(nextNotification);
+            mNotificationView.setTag(nextNotification);
 
             if (nextNotification.getNotification().contentIntent != null) {
                 final View.OnClickListener listener =
@@ -183,10 +189,10 @@ public class NotificationPeekActivity extends Activity {
             if (nextNotificationIndex == 0) {
                 // As we already moved the next notification to 'Current Notification' spot, we need
                 // to hide it too if there is only one unread notification left.
-                notificationContainer.getChildAt(nextNotificationIndex).setVisibility(View.GONE);
+                mNotificationsContainer.getChildAt(nextNotificationIndex).setVisibility(View.GONE);
             } else {
                 // Otherwise, highlight that icon.
-                notificationContainer.getChildAt(nextNotificationIndex).setAlpha(1);
+                mNotificationsContainer.getChildAt(nextNotificationIndex).setAlpha(1);
             }
 
             return true;
@@ -206,6 +212,69 @@ public class NotificationPeekActivity extends Activity {
         }
 
         return -1;
+    }
+
+    /**
+     * Check whether a notification with the same package name as the new notification is
+     * shown in the icon container.
+     *
+     * @param hub   NotificationHub instance.
+     *
+     * @return      Index of the icon ImageView in its parent. -1 if not found.
+     */
+    private int getOldIconViewIndex(NotificationHub hub) {
+        for (int i = 0; i < mNotificationsContainer.getChildCount(); i++) {
+            View child = mNotificationsContainer.getChildAt(i);
+            if (child.getTag() == null) {
+                continue;
+            }
+
+            StatusBarNotification n = (StatusBarNotification) child.getTag();
+
+            if (n.getPackageName().equals(hub.getCurrentNotification().getPackageName())) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Update small notification icons when there is new notification coming, and the
+     * Activity is in foreground.
+     */
+    private void updateNotificationIcons() {
+
+        if (mNotificationsContainer.getVisibility() != View.VISIBLE) {
+            mNotificationsContainer.setVisibility(View.VISIBLE);
+        }
+
+        NotificationHub notificationHub = mPeek.getNotificationHub();
+
+        int iconSize = getResources().getDimensionPixelSize(R.dimen.small_notification_icon_size);
+        int padding = getResources().getDimensionPixelSize(R.dimen.small_notification_icon_padding);
+
+        final StatusBarNotification n = notificationHub.getCurrentNotification();
+        ImageView icon = new ImageView(this);
+        icon.setAlpha(NotificationPeek.ICON_LOW_OPACITY);
+
+        icon.setPadding(padding, 0, padding, 0);
+        icon.setImageDrawable(NotificationPeekViewUtils.getIconFromResource(this, n));
+        icon.setTag(n);
+
+        int oldIndex = getOldIconViewIndex(notificationHub);
+
+        if (oldIndex >= 0) {
+            mNotificationsContainer.removeViewAt(oldIndex);
+        }
+
+        mNotificationsContainer.addView(icon);
+        LinearLayout.LayoutParams linearLayoutParams =
+                new LinearLayout.LayoutParams(iconSize, iconSize);
+
+        // Wrap LayoutParams to GridLayout.LayoutParams.
+        GridLayout.LayoutParams gridLayoutParams = new GridLayout.LayoutParams(linearLayoutParams);
+        icon.setLayoutParams(gridLayoutParams);
     }
 
     /**
@@ -234,26 +303,34 @@ public class NotificationPeekActivity extends Activity {
 
     public class NotificationPeekReceiver extends BroadcastReceiver {
 
-        // Action for updating notification peek view.
-        public static final String ACTION_UPDATE_NOTIFICATION =
+        // Action for dismissing notification peek view.
+        public static final String ACTION_DIMISS_NOTIFICATION =
+                "NotificationPeek.dismiss_notification";
+
+        // Action for updating notification icons.
+        public static final String ACTION_UPDATE_NOTIFICATION_ICONS =
                 "NotificationPeek.update_notification";
 
         // Action for finishing this activity.
-        public static final String ACTION_DISMISS = "NotificationPeek.dismiss_notification";
+        public static final String ACTION_FINISH_PEEK = "NotificationPeek.finish_peek";
+
         public static final String EXTRA_NOTIFICATION_DESCRIPTION =
                 "NotificationPeek.extra_status_bar_notification_description";
 
+
         @Override
         public void onReceive(Context context, Intent intent) {
-            if (intent.getAction().equals(ACTION_DISMISS)) {
+            if (intent.getAction().equals(ACTION_FINISH_PEEK)) {
                 finish();
-            } else if (intent.getAction().equals(ACTION_UPDATE_NOTIFICATION)) {
+            } else if (intent.getAction().equals(ACTION_DIMISS_NOTIFICATION)) {
                 String description = intent.getStringExtra(EXTRA_NOTIFICATION_DESCRIPTION);
                 if (!updateNotification(description)) {
                     lockScreen();
                 }
             } else if (intent.getAction().equals(Intent.ACTION_TIME_TICK)) {
                 mClockTextView.setText(getCurrentTimeText());
+            } else if (intent.getAction().equals(ACTION_UPDATE_NOTIFICATION_ICONS)) {
+                updateNotificationIcons();
             }
         }
     }
