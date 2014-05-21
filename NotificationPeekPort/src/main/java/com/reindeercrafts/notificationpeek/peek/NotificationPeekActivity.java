@@ -214,17 +214,34 @@ public class NotificationPeekActivity extends Activity {
         return -1;
     }
 
+    private void restoreFirstIconVisibility() {
+        View firstIcon = mNotificationsContainer.getChildAt(0);
+        if (firstIcon.getVisibility() == View.GONE) {
+            // The first icon is hidden before in response to the swipe gesture,
+            firstIcon.setVisibility(View.VISIBLE);
+        }
+
+        // Highlight the first notification if it is currently selected.
+        StatusBarNotification largeIconNotification =
+                (StatusBarNotification) mNotificationView.getTag();
+        StatusBarNotification firstIconNotification = (StatusBarNotification) firstIcon.getTag();
+        if (largeIconNotification.getPackageName().equals(firstIconNotification.getPackageName())) {
+            firstIcon.setAlpha(1f);
+        }
+
+    }
+
     /**
      * Check whether a notification with the same package name as the new notification is
      * shown in the icon container.
      *
-     * @param hub   NotificationHub instance.
-     *
-     * @return      Index of the icon ImageView in its parent. -1 if not found.
+     * @param hub NotificationHub instance.
+     * @return Index of the icon ImageView in its parent. -1 if not found.
      */
     private int getOldIconViewIndex(NotificationHub hub) {
         for (int i = 0; i < mNotificationsContainer.getChildCount(); i++) {
             View child = mNotificationsContainer.getChildAt(i);
+
             if (child.getTag() == null) {
                 continue;
             }
@@ -249,7 +266,7 @@ public class NotificationPeekActivity extends Activity {
             mNotificationsContainer.setVisibility(View.VISIBLE);
         }
 
-        NotificationHub notificationHub = mPeek.getNotificationHub();
+        NotificationHub notificationHub = NotificationHub.getInstance();
 
         int iconSize = getResources().getDimensionPixelSize(R.dimen.small_notification_icon_size);
         int padding = getResources().getDimensionPixelSize(R.dimen.small_notification_icon_padding);
@@ -261,6 +278,8 @@ public class NotificationPeekActivity extends Activity {
         icon.setPadding(padding, 0, padding, 0);
         icon.setImageDrawable(NotificationPeekViewUtils.getIconFromResource(this, n));
         icon.setTag(n);
+
+        restoreFirstIconVisibility();
 
         int oldIndex = getOldIconViewIndex(notificationHub);
 
