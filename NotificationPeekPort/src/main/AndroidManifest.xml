@@ -36,6 +36,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".blacklist.BlackListActivity"
+                android:configChanges="orientation"></activity>
+
         <activity android:name=".settings.Settings"/>
 
         <receiver

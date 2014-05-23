@@ -14,7 +14,7 @@
             android:fontFamily="sans-serif-condensed"
             android:textAppearance="?android:textAppearanceLarge"
             android:id="@+id/dialog_title_text"
-            android:layout_margin="@dimen/generic_padding"/>
+            android:layout_margin="@dimen/generic_spacing_medium"/>
 
     <ScrollView
             android:layout_width="match_parent"

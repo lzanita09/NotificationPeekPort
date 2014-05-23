@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.reindeercrafts.notificationpeek.blacklist.BlackListActivity;
 import com.reindeercrafts.notificationpeek.dialogs.DialogHelper;
 import com.reindeercrafts.notificationpeek.settings.Settings;
 import com.reindeercrafts.notificationpeek.utils.AccessChecker;
@@ -179,6 +180,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             DialogHelper.showAboutDialog(this);
         } else if (id == R.id.action_help) {
             DialogHelper.showHelpDialog(this);
+        } else if (id == R.id.action_blacklist) {
+            Intent intent = new Intent(this, BlackListActivity.class);
+            startActivity(intent);
         }
 
         return super.onOptionsItemSelected(item);

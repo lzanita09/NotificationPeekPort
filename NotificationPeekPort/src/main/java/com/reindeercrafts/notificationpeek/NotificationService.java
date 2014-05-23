@@ -11,6 +11,7 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 
+import com.reindeercrafts.notificationpeek.blacklist.AppList;
 import com.reindeercrafts.notificationpeek.peek.NotificationPeek;
 import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 import com.reindeercrafts.notificationpeek.utils.AccessChecker;
@@ -43,11 +44,12 @@ public class NotificationService extends NotificationListenerService {
     private int mSensorTimeoutMultiplier;
     private boolean mShowContent;
 
-
     private NotificationHub mNotificationHub;
     private NotificationPeek mNotificationPeek;
 
     private NotificationActionReceiver mReceiver;
+
+    private AppList mAppList;
 
 
     @Override
@@ -67,6 +69,8 @@ public class NotificationService extends NotificationListenerService {
 
         // Does user select always show content?
         mShowContent = preferences.getBoolean(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT, false);
+
+        mAppList = AppList.getInstance(this);
 
         registerNotificationActionReceiver();
     }
@@ -117,8 +121,9 @@ public class NotificationService extends NotificationListenerService {
      * @return True if the package is in black list, false otherwise.
      */
     private boolean isInBlackList(StatusBarNotification notification) {
-        // TODO: Implement black list.
-        return notification.getNotification().priority < Notification.PRIORITY_DEFAULT;
+
+        return notification.getNotification().priority < Notification.PRIORITY_DEFAULT ||
+                mAppList.isInBlackList(notification.getPackageName());
 
     }
 

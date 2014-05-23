@@ -11,5 +11,9 @@
     <dimen name="clock_padding">10dp</dimen>
     <dimen name="clock_size">15dp</dimen>
     <dimen name="checkmark_width">32dp</dimen>
-    <dimen name="generic_padding">8dp</dimen>
+    <dimen name="app_icon_size">48dp</dimen>
+
+    <dimen name="generic_spacing_medium">8dp</dimen>
+    <dimen name="list_divider_height">8dp</dimen>
+    <dimen name="header_text_size">16sp</dimen>
 </resources>

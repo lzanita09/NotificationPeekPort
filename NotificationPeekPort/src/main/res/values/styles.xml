@@ -18,5 +18,14 @@
         <item name="android:paddingTop">8dp</item>
     </style>
     
+    <style name="TitleTextStyle">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textAppearance">?android:textAppearanceMedium</item>
+    </style>
 
+    <style name="HeaderTextStyle">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textAppearance">?android:textAppearanceMedium</item>
+        <item name="android:textSize">@dimen/header_text_size</item>
+    </style>
 </resources>

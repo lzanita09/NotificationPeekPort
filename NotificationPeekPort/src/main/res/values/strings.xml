@@ -38,5 +38,9 @@
     <string name="close">Close</string>
     <string name="sensor_missing">Sensor is not found.</string>
     <string name="device_admin_missing">Peek is not activated in Device Administrator. Please enable it first.</string>
+    <string name="search_hint">Enter app name</string>
+    <string name="black_list">Black List</string>
+    <string name="add_to_black_list">Search app name and add to black list:</string>
+    <string name="current_black_list">Current Black List:</string>
 
 </resources>
