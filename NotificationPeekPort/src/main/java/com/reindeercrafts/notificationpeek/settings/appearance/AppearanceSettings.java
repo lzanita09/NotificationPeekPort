@@ -17,6 +17,12 @@ public class AppearanceSettings extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        if (WallpaperFactory.isLiveWallpaperUsed(this)) {
+            setTheme(R.style.AppTheme_Wallpaper);
+        } else {
+            setTheme(R.style.AppTheme);
+        }
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.appearance_settings_layout);

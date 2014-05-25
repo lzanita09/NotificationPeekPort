@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.reindeercrafts.notificationpeek.NotificationHub;
 import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
+import com.reindeercrafts.notificationpeek.settings.appearance.WallpaperFactory;
 import com.reindeercrafts.notificationpeek.utils.NotificationPeekViewUtils;
 
 import java.util.Date;
@@ -51,6 +52,12 @@ public class NotificationPeekActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
         );
+
+        if (WallpaperFactory.isLiveWallpaperUsed(this)) {
+            setTheme(R.style.AppTheme_Peek_Wallpaper);
+        } else {
+            setTheme(R.style.AppTheme_Peek);
+        }
 
         super.onCreate(savedInstanceState);
 
@@ -160,7 +167,8 @@ public class NotificationPeekActivity extends Activity {
 
             if (nextNotification.getNotification().largeIcon != null) {
                 notificationIcon.setImageDrawable(NotificationPeekViewUtils
-                        .getRoundedShape(notificationIcon, nextNotification.getNotification().largeIcon));
+                        .getRoundedShape(notificationIcon,
+                                nextNotification.getNotification().largeIcon));
             } else {
                 notificationIcon.setImageDrawable(
                         NotificationPeekViewUtils.getIconFromResource(this, nextNotification));

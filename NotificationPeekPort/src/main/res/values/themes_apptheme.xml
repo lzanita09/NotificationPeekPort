@@ -15,5 +15,14 @@
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 
+    <style name="AppTheme.Wallpaper" parent="AppTheme">
+        <item name="android:windowShowWallpaper">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="AppTheme.Peek.Wallpaper" parent="AppTheme.Peek">
+        <item name="android:windowBackground">@color/opaque_layer</item>
+        <item name="android:windowShowWallpaper">true</item>
+    </style>
 
 </resources>

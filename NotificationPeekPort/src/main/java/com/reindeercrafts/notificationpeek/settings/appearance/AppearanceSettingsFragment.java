@@ -46,11 +46,17 @@ public class AppearanceSettingsFragment extends Fragment
 
     private ImageView mPreviewImageView;
     private TransitionDrawable mPreviewImageDrawable;
+    private Drawable[] mChangeDrawables;
+    private Drawable[] mAdjustDrawables;
+    private int mBlackDrawableIndex;
+    private boolean mAdjusted;
 
     private SeekBar mRadiusSeek;
     private SeekBar mDimSeek;
     private TextView mRadiusText;
     private TextView mDimText;
+
+    private boolean mUseLiveWallpaper;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -59,6 +65,7 @@ public class AppearanceSettingsFragment extends Fragment
         mHandler = new Handler(Looper.getMainLooper());
         mWallpaperFactory = new WallpaperFactory(getActivity());
 
+        mUseLiveWallpaper = WallpaperFactory.isLiveWallpaperUsed(getActivity());
         mPreviewImageDrawable = initPreviewBackgroundDrawable();
 
         View rootView = inflater.inflate(R.layout.appearance_fragment_layout, container, false);
@@ -96,17 +103,17 @@ public class AppearanceSettingsFragment extends Fragment
      * @return TransitionDrawable object created.
      */
     private TransitionDrawable initPreviewBackgroundDrawable() {
-        Drawable[] drawables;
 
         boolean isWallpaperSelected = mWallpaperFactory.isWallpaperThemeSelected();
         Drawable black = new ColorDrawable(Color.BLACK);
         Drawable wallpaper =
-                new BitmapDrawable(getResources(), mWallpaperFactory.getPrefSystemWallpaper());
+                mUseLiveWallpaper ? new ColorDrawable(Color.TRANSPARENT) : new BitmapDrawable(
+                        getResources(), mWallpaperFactory.getPrefSystemWallpaper());
 
-        drawables =
+        mChangeDrawables =
                 !isWallpaperSelected ? new Drawable[]{black, wallpaper} : new Drawable[]{wallpaper, black};
-
-        return new TransitionDrawable(drawables);
+        mBlackDrawableIndex = !isWallpaperSelected ? 0 : 1;
+        return new TransitionDrawable(mChangeDrawables);
     }
 
     private void initSeekBars() {
@@ -131,10 +138,9 @@ public class AppearanceSettingsFragment extends Fragment
      * drawable that is different from the parameter, which is the starting drawable of the
      * TransitionDrawable.
      *
-     * @param T target drawable class.
      * @return Index of the source drawable.
      */
-    private int getSourceDrawableIndex(Class T) {
+    private int getSourceDrawableIndex() {
         if (mPreviewImageDrawable.getDrawable(0).getClass()
                 .equals(mPreviewImageDrawable.getDrawable(1).getClass())) {
             // At this point we know that user is using the SeekBar to adjust background, so that
@@ -143,9 +149,9 @@ public class AppearanceSettingsFragment extends Fragment
             return 1;
         }
 
-        // One of the Drawables is a ColorDrawable, the other is a BitmapDrawable, choose the one
-        // that is different from the given class.
-        return mPreviewImageDrawable.getDrawable(0).getClass().equals(T) ? 1 : 0;
+        // One of the Drawables is a ColorDrawable (Black), the other is a BitmapDrawable, choose the one
+        // that is different from the Black ColorDrawable.
+        return (mBlackDrawableIndex + 1) % 2;
     }
 
     /**
@@ -165,6 +171,8 @@ public class AppearanceSettingsFragment extends Fragment
             mDimSeek.setEnabled(false);
             mRadiusText.setEnabled(false);
             mDimText.setEnabled(false);
+
+
         } else {
             // using system wallpaper.
             if (!manual) {
@@ -172,10 +180,10 @@ public class AppearanceSettingsFragment extends Fragment
             } else {
                 mPreviewImageDrawable.reverseTransition(TRANSITION_ANIM_DURATION);
             }
-            mRadiusSeek.setEnabled(true);
-            mDimSeek.setEnabled(true);
-            mRadiusText.setEnabled(true);
-            mDimText.setEnabled(true);
+            mRadiusSeek.setEnabled(true && !mUseLiveWallpaper);
+            mDimSeek.setEnabled(true && !mUseLiveWallpaper);
+            mRadiusText.setEnabled(true && !mUseLiveWallpaper);
+            mDimText.setEnabled(true && !mUseLiveWallpaper);
         }
     }
 
@@ -244,16 +252,17 @@ public class AppearanceSettingsFragment extends Fragment
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         // Change preview background.
+        mAdjusted = true;
         mHandler.postDelayed(mReloadPreviewRunnable, 300);
     }
 
     private Runnable mReloadPreviewRunnable = new Runnable() {
         @Override
         public void run() {
-            mPreviewImageDrawable = new TransitionDrawable(new Drawable[]{mPreviewImageDrawable
-                    .getDrawable(getSourceDrawableIndex(ColorDrawable.class)), new BitmapDrawable(
-                    getResources(), mWallpaperFactory.getPrefSystemWallpaper())}
-            );
+            mAdjustDrawables = new Drawable[]{mPreviewImageDrawable
+                    .getDrawable(getSourceDrawableIndex()), new BitmapDrawable(
+                    getResources(), mWallpaperFactory.getPrefSystemWallpaper())};
+            mPreviewImageDrawable = new TransitionDrawable(mAdjustDrawables);
             mPreviewImageView.setImageDrawable(mPreviewImageDrawable);
             mPreviewImageDrawable.startTransition(TRANSITION_ANIM_DURATION);
         }
@@ -263,16 +272,15 @@ public class AppearanceSettingsFragment extends Fragment
         @Override
         public void run() {
             // Build a new TransitionDrawable that presents the change of preview images.
-            Drawable[] previewDrawables = new Drawable[2];
+            if (mAdjusted) {
+                mAdjusted = false;
+                mChangeDrawables[1] = mChangeDrawables[mBlackDrawableIndex];
+                mChangeDrawables[0] = mAdjustDrawables[1];
 
-            previewDrawables[1] = mWallpaperFactory.isWallpaperThemeSelected() ? new BitmapDrawable(
-                    getResources(), mWallpaperFactory.getPrefSystemWallpaper()
-            ) : new ColorDrawable(Color.BLACK);
-            previewDrawables[0] = mPreviewImageDrawable
-                    .getDrawable(getSourceDrawableIndex(previewDrawables[1].getClass()));
-
-            mPreviewImageDrawable = new TransitionDrawable(previewDrawables);
+                mPreviewImageDrawable = new TransitionDrawable(mChangeDrawables);
+            }
             mPreviewImageView.setImageDrawable(mPreviewImageDrawable);
+
             updateLayouts(true);
         }
     };

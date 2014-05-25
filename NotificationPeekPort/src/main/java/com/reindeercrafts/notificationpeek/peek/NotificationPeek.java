@@ -73,7 +73,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private static final long SCREEN_WAKELOCK_TIMEOUT = 2000; // 1 sec
     private static final int SENSOR_TIME_OUT_INFINITE = -1;
 
-
     private SensorActivityHandler mSensorHandler;
     private KeyguardManager mKeyguardManager;
     private PowerManager mPowerManager;
@@ -316,7 +315,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
      */
     public void updateBackgroundImageView() {
 
-        boolean used = mWallpaperFactory.isWallpaperThemeSelected();
+        boolean used = mWallpaperFactory.isWallpaperThemeSelected() && !WallpaperFactory.isLiveWallpaperUsed(mContext);
 
         if (mPeekBackgroundImageView == null) {
             mPeekBackgroundImageView = new ImageView(mContext);
@@ -429,8 +428,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
         if (isNotificationActive(n) && (!update || (update && shouldDisplay))) {
             // update information
-            updateNotificationIcons();
             if (!mShowing) {
+                updateNotificationIcons();
                 updateSelection(n);
             } else {
                 mContext.sendBroadcast(new Intent(NotificationPeekActivity.
@@ -534,9 +533,6 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     public void updateNotificationIcons() {
-        if (mShowing) {
-            return;
-        }
         mNotificationsContainer.removeAllViews();
         int iconSize =
                 mContext.getResources().getDimensionPixelSize(R.dimen.small_notification_icon_size);

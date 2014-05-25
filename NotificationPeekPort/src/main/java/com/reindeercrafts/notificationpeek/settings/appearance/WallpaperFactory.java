@@ -6,16 +6,16 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 
 import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 
 /**
  * Helper class used for generating background bitmap based on user preferences and check current
  * Peek background preference.
- *
+ * <p/>
  * Created by zhelu on 5/24/14.
  */
 public class WallpaperFactory {
@@ -31,6 +31,10 @@ public class WallpaperFactory {
     private WallpaperManager mWallpaperManager;
     private Context mContext;
 
+    public static boolean isLiveWallpaperUsed(Context context) {
+        return WallpaperManager.getInstance(context).getWallpaperInfo() != null;
+    }
+
     public WallpaperFactory(Context context) {
         this.mContext = context;
         mWallpaperManager = WallpaperManager.getInstance(context);
@@ -39,7 +43,7 @@ public class WallpaperFactory {
     /**
      * Create a bitmap that is blurred and dimmed with the amount that user has selected.
      *
-     * @return          Background bitmap.
+     * @return Background bitmap.
      */
     public Bitmap getPrefSystemWallpaper() {
 
@@ -48,10 +52,12 @@ public class WallpaperFactory {
                 .getFloat(PreferenceKeys.PREF_RADIUS, ImageBlurrer.MAX_SUPPORTED_BLUR_PIXELS);
         int dim = preferences.getInt(PreferenceKeys.PREF_DIM, DEFAULT_MAX_DIM);
 
+        DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
+
         // Blur
         ImageBlurrer imageBlurrer = new ImageBlurrer(mContext);
-        Bitmap blurred = imageBlurrer
-                .blurBitmap(drawableToBitmap(mWallpaperManager.getFastDrawable()), radius);
+        Bitmap blurred = imageBlurrer.blurBitmap(drawableToBitmap(mWallpaperManager.getFastDrawable(),
+                displayMetrics.widthPixels), radius);
         // Dim
         Canvas c = new Canvas(blurred);
         c.drawColor(Color.argb(255 - dim, 0, 0, 0));
@@ -62,30 +68,38 @@ public class WallpaperFactory {
     /**
      * Convert drawable to bitmap.
      *
-     * @param drawable      Drawable object to be converted.
-     * @return              converted bitmap.
+     * @param drawable Drawable object to be converted.
+     * @return converted bitmap.
      */
-    private Bitmap drawableToBitmap(Drawable drawable) {
-        if (drawable instanceof BitmapDrawable) {
-            return ((BitmapDrawable) drawable).getBitmap();
-        }
-
-        Bitmap bitmap =
-                Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(),
-                        Bitmap.Config.ARGB_8888);
+    private Bitmap drawableToBitmap(Drawable drawable, int width) {
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
+                drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
+        bitmap = cropBitmap(bitmap, width);
 
         return bitmap;
     }
 
     /**
+     * Crop wallpaper to fit the Peek view.
+     *
+     * @param original  Original Wallpaper bitmap.
+     * @param width     Desired width.
+     * @return          Cropped bitmap.
+     */
+    private Bitmap cropBitmap(Bitmap original, int width) {
+        Bitmap cropped = Bitmap.createBitmap(original, 0, 0, width, original.getHeight());
+        return cropped;
+    }
+
+    /**
      * Check if user selected system wallpaper as Peek background.
      *
-     * @return          True if system wallpaper is selected, false otherwise.
+     * @return True if system wallpaper is selected, false otherwise.
      */
-    public  boolean isWallpaperThemeSelected() {
+    public boolean isWallpaperThemeSelected() {
         return PreferenceManager.getDefaultSharedPreferences(mContext)
                 .getInt(PreferenceKeys.PREF_BACKGROUND, BACKGROUND_PURE_BLACK) ==
                 BACKGROUND_SYSTEM_WALLPAPER;
