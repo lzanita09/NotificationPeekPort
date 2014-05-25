@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import com.reindeercrafts.notificationpeek.NotificationService;
 import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.peek.SensorActivityHandler;
+import com.reindeercrafts.notificationpeek.settings.appearance.AppearanceSettings;
 import com.reindeercrafts.notificationpeek.utils.SensorHelper;
 
 /**
@@ -20,13 +21,17 @@ import com.reindeercrafts.notificationpeek.utils.SensorHelper;
  * Created by zhelu on 5/3/14.
  */
 public class GeneralSettingsFragment extends PreferenceFragment
-        implements Preference.OnPreferenceChangeListener {
+        implements Preference.OnPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         addPreferencesFromResource(R.xml.preferences);
+
+        // Appearance settings entrance.
+        Preference appearancePref = findPreference(PreferenceKeys.PREF_APPEARANCE);
+        appearancePref.setOnPreferenceClickListener(this);
 
         // Clock preference.
         CheckBoxPreference clockPref =
@@ -122,5 +127,16 @@ public class GeneralSettingsFragment extends PreferenceFragment
             preference.setSummary(newSum);
 
         }
+    }
+
+    @Override
+    public boolean onPreferenceClick(Preference preference) {
+        if (preference.getKey().equals(PreferenceKeys.PREF_APPEARANCE)) {
+            // Launch appearance settings activity.
+            Intent intent = new Intent(getActivity(), AppearanceSettings.class);
+            startActivity(intent);
+            return true;
+        }
+        return false;
     }
 }

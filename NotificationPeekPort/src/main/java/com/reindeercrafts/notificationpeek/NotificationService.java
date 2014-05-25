@@ -147,12 +147,9 @@ public class NotificationService extends NotificationListenerService {
                 int id = intent.getIntExtra(EXTRA_NOTIFICATION_ID, INVAID_ID);
                 cancelNotification(packageName, tag, id);
             } else if (action.equals(ACTION_PREFERENCE_CHANGED)) {
-
                 // Update user preferences.
                 String changedKey = intent.getStringExtra(PreferenceKeys.INTENT_ACTION_KEY);
                 String newValue = intent.getStringExtra(PreferenceKeys.INTENT_ACTION_NEW_VALUE);
-
-                Log.d(TAG, "Key: " + changedKey + ", value: " + newValue);
 
                 if (changedKey.equals(PreferenceKeys.PREF_PEEK_TIMEOUT)) {
                     mPeekTimeoutMultiplier = Integer.parseInt(newValue);
@@ -160,6 +157,10 @@ public class NotificationService extends NotificationListenerService {
                     mSensorTimeoutMultiplier = Integer.parseInt(newValue);
                 } else if (changedKey.equals(PreferenceKeys.PREF_ALWAYS_SHOW_CONTENT)) {
                     mShowContent = Boolean.parseBoolean(newValue);
+                } else if (changedKey.equals(PreferenceKeys.PREF_BACKGROUND) ||
+                        changedKey.equals(PreferenceKeys.PREF_DIM) ||
+                        changedKey.equals(PreferenceKeys.PREF_RADIUS)) {
+                    mNotificationPeek.updateBackgroundImageView();
                 }
             }
         }

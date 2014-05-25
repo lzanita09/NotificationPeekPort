@@ -22,7 +22,7 @@
         </service>
 
         <activity android:name=".peek.NotificationPeekActivity"
-                  android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
+                  android:theme="@style/AppTheme.Peek"
                   android:configChanges="orientation|keyboard"
                   android:excludeFromRecents="true"
                   android:screenOrientation="portrait"/>
@@ -37,7 +37,10 @@
         </activity>
 
         <activity android:name=".blacklist.BlackListActivity"
-                android:configChanges="orientation"></activity>
+                android:configChanges="orientation" />
+
+        <activity android:name=".settings.appearance.AppearanceSettings"
+                  android:configChanges="orientation" />
 
         <activity android:name=".settings.Settings"/>
 

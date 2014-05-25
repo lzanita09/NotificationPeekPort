@@ -162,6 +162,9 @@ public class SwipeHelper implements Gefingerpoken {
                 animView.setLayerType(View.LAYER_TYPE_NONE, null);
             }
             animView.setAlpha(getAlphaForOffset(animView));
+            if (mCallback != null) {
+                mCallback.onAlphaChanged(animView.getAlpha());
+            }
         }
         invalidateGlobalRegion(animView);
     }
@@ -407,5 +410,7 @@ public class SwipeHelper implements Gefingerpoken {
         void onChildDismissed(View v);
 
         void onDragCancelled(View v);
+
+        void onAlphaChanged(float alpha);
     }
 }

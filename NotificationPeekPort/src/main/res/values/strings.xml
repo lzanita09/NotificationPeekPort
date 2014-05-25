@@ -42,5 +42,11 @@
     <string name="black_list">Black List</string>
     <string name="add_to_black_list">Search app name and add to black list:</string>
     <string name="current_black_list">Current Black List:</string>
+    <string name="peek_background">Peek View Background</string>
+    <string name="appearance">Appearance</string>
+    <string name="appearance_settings">Appearance Settings</string>
+    <string name="appearance_settings_sum">Change Peek view appearances</string>
+    <string name="radius">Blur Radius</string>
+    <string name="dim">Dim</string>
 
 </resources>

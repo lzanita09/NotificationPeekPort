@@ -8,6 +8,7 @@ import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.SpannableString;
@@ -140,7 +141,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
                 .setTicker(getString(R.string.diagnosis_notification_title))
                 .setContentTitle(getString(R.string.diagnosis_notification_title))
                 .setContentText(getString(R.string.diagnosis_notification_content))
-                .setAutoCancel(true).setContentIntent(pendingIntent);
+                .setLights(Color.GREEN, 1000, 5000)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
 
         handler.postDelayed(new Runnable() {
             @Override

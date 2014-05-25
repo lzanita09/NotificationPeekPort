@@ -36,6 +36,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -45,6 +46,7 @@ import android.widget.TextView;
 import com.reindeercrafts.notificationpeek.NotificationHub;
 import com.reindeercrafts.notificationpeek.NotificationService;
 import com.reindeercrafts.notificationpeek.R;
+import com.reindeercrafts.notificationpeek.settings.appearance.WallpaperFactory;
 import com.reindeercrafts.notificationpeek.utils.NotificationPeekViewUtils;
 import com.reindeercrafts.notificationpeek.utils.UnlockGesture;
 
@@ -93,6 +95,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private GridLayout mNotificationsContainer;
     private ImageView mNotificationIcon;
     private TextView mNotificationText;
+    private ImageView mPeekBackgroundImageView;
 
     private Context mContext;
 
@@ -233,8 +236,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         // current notification text
         mNotificationText = new TextView(context);
         mNotificationText.setId(NOTIFICATION_TEXT_ID);
-        Typeface textTypeface = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
-        mNotificationText.setTypeface(textTypeface);
+        Typeface typeface = Typeface.create("sans-serif-condensed", Typeface.NORMAL);
+        mNotificationText.setTypeface(typeface);
         mNotificationText.setGravity(Gravity.CENTER);
         mNotificationText.setEllipsize(TextUtils.TruncateAt.END);
         mNotificationText.setSingleLine(true);
@@ -243,7 +246,10 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
                         0, 0);
 
         mNotificationView.addView(mNotificationIcon);
-        mNotificationView.addView(mNotificationText);
+
+        // Move NotificationText out of NotificationView, so that it won't be swiped away with
+        // the icon.
+        rootView.addView(mNotificationText);
 
         int iconSize =
                 mContext.getResources().getDimensionPixelSize(R.dimen.notification_icon_size);
@@ -296,7 +302,45 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         notificationsLayoutParams.addRule(RelativeLayout.BELOW, rootView.getId());
         mNotificationsContainer.setLayoutParams(notificationsLayoutParams);
 
+        updateBackgroundImageView();
+    }
 
+    public void updateNotificationTextAlpha(float alpha) {
+        mNotificationText.setAlpha(alpha);
+    }
+
+    /**
+     * Update background ImageView to display proper background according to user preference.
+     */
+    public void updateBackgroundImageView() {
+
+        boolean used = WallpaperFactory.isWallpaperThemeSelected(mContext);
+
+        if (mPeekBackgroundImageView == null) {
+            mPeekBackgroundImageView = new ImageView(mContext);
+            ViewGroup.LayoutParams params =
+                    new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT);
+            mPeekBackgroundImageView.setLayoutParams(params);
+            mPeekBackgroundImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        }
+
+        if (used) {
+            mPeekBackgroundImageView
+                    .setImageBitmap(WallpaperFactory.getPrefSystemWallpaper(mContext));
+            if (!isBackgroundImageViewAdded()) {
+                sPeekView.addView(mPeekBackgroundImageView, 0);
+            }
+        } else {
+            if (isBackgroundImageViewAdded()) {
+                sPeekView.removeViewAt(0);
+            }
+        }
+
+    }
+
+    private boolean isBackgroundImageViewAdded() {
+        return sPeekView.getChildAt(0) instanceof ImageView;
     }
 
     /* If mSensorTimeoutMultiplier is -1, we don't remove listeners, but let them keep listening. */
@@ -366,6 +410,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         mShowContent = showContent;
         mPeekTimeoutMultiplier = peekTimeoutMultiplier;
         showNotification(n, update, false);
+
+        updateNotificationTextAlpha(1);
     }
 
     private void showNotification(StatusBarNotification n, boolean update, boolean force) {
@@ -385,9 +431,9 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             if (!mShowing) {
                 updateSelection(n);
             } else {
-                mContext.sendBroadcast(new Intent(
-                        NotificationPeekActivity.
-                                NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION_ICONS));
+                mContext.sendBroadcast(new Intent(NotificationPeekActivity.
+                        NotificationPeekReceiver.ACTION_UPDATE_NOTIFICATION_ICONS
+                ));
             }
 
             // check if phone is in the pocket or lying on a table
@@ -450,8 +496,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     public void dismissNotification() {
         if (mShowing) {
             mShowing = false;
-            mContext.sendBroadcast(
-                    new Intent(NotificationPeekActivity.NotificationPeekReceiver.ACTION_FINISH_PEEK));
+            mContext.sendBroadcast(new Intent(
+                    NotificationPeekActivity.NotificationPeekReceiver.ACTION_FINISH_PEEK));
 
             if (mPartialWakeLock.isHeld()) {
                 if (DEBUG) {
@@ -549,7 +595,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             // update big icon
             Bitmap b = n.getNotification().largeIcon;
             if (b != null) {
-                mNotificationIcon.setImageBitmap(NotificationPeekViewUtils.getRoundedShape(b));
+                mNotificationIcon.setImageDrawable(
+                        NotificationPeekViewUtils.getRoundedShape(mNotificationIcon, b));
             } else {
                 mNotificationIcon.setImageDrawable(
                         NotificationPeekViewUtils.getIconFromResource(mContext, n));

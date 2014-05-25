@@ -45,6 +45,9 @@ public class AppInfo {
      * @return AppInfo object.
      */
     public static AppInfo fromString(String str) {
+        if (!str.matches(".*<>.*")) {
+            return new AppInfo("", "");
+        }
         String[] infos = str.split(DELIMITER);
         return new AppInfo(infos[0], infos[1]);
     }

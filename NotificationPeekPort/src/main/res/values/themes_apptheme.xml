@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Generated with http://android-holo-colors.com -->
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="android:Theme.Holo">
+        <item name="android:windowBackground">@color/background_color</item>
+        <item name="android:actionBarStyle">@style/ActionBarStyle</item>
+        <item name="android:editTextBackground">@drawable/apptheme_edit_text_holo_dark</item>
+        <item name="android:seekBarStyle">@style/SeekBarAppTheme</item>
+    </style>
+
+    <style name="AppTheme.Peek" parent="@android:style/Theme.Holo.NoActionBar.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+    </style>
+
+
+</resources>

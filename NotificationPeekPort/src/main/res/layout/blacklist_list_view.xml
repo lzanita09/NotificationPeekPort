@@ -12,7 +12,7 @@
             android:layout_marginLeft="@dimen/activity_vertical_margin"
             android:layout_marginRight="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/generic_spacing_medium"
-            style="@style/HeaderTextStyle"
+            style="@style/HeaderTextStyle.Medium"
             android:text="@string/current_black_list"/>
 
     <ListView xmlns:android="http://schemas.android.com/apk/res/android"

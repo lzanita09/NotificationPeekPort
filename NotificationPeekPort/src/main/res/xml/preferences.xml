@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/appearance">
+        <Preference
+            android:key="appearance"
+            android:title="@string/appearance_settings"
+            android:summary="@string/appearance_settings_sum" />
+        </PreferenceCategory>
+
     <PreferenceCategory
             android:title="@string/general_preferences">
         <CheckBoxPreference

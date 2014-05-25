@@ -111,4 +111,9 @@ public class NotificationLayout extends LinearLayout implements SwipeHelper.Call
     public void onDragCancelled(View v) {
         mNotificationPeek.setAnimating(false);
     }
+
+    @Override
+    public void onAlphaChanged(float alpha) {
+        mNotificationPeek.updateNotificationTextAlpha(alpha);
+    }
 }

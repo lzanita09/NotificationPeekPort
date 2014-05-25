@@ -24,6 +24,7 @@ public class AppList {
 
     private ArrayList<AppInfo> mCurrentBlackList;
     private List<ApplicationInfo> mApplicationInfos;
+    private boolean mBlackListChanged = false;
 
     private Context mContext;
 
@@ -49,11 +50,13 @@ public class AppList {
     public void addToBlackList(AppInfo appInfo) {
         if (!mCurrentBlackList.contains(appInfo)) {
             mCurrentBlackList.add(appInfo);
+            mBlackListChanged = true;
         }
     }
 
     public void removeFromBlackList(AppInfo appInfo) {
         mCurrentBlackList.remove(appInfo);
+        mBlackListChanged = true;
     }
 
     public ArrayList<AppInfo> getAppList(CharSequence constraint) {
@@ -69,7 +72,7 @@ public class AppList {
             String keyWord = constraint.toString().toLowerCase();
 
             if (
-//                    (info.flags & ApplicationInfo.FLAG_SYSTEM ) == 0 &&
+                //                    (info.flags & ApplicationInfo.FLAG_SYSTEM ) == 0 &&
                     appName.toLowerCase().contains(keyWord)) {
                 appInfos.add(new AppInfo(info.packageName, appName));
             }
@@ -82,11 +85,15 @@ public class AppList {
      * Save the current black list into SharedPreferences as String set.
      */
     public void storeBlackList() {
+        if (!mBlackListChanged) {
+            // Black list hasn't changed since last restore.
+            return;
+        }
         SharedPreferences blackListPref = PreferenceManager.getDefaultSharedPreferences(mContext);
         HashSet<String> blackList = new HashSet<String>();
 
         for (AppInfo appInfo : mCurrentBlackList) {
-            blackList.add(appInfo.toString());
+            blackList.add(appInfo.getString());
         }
         blackListPref.edit().putStringSet(BLACK_LIST_PREF, blackList).apply();
     }
@@ -94,7 +101,7 @@ public class AppList {
     /**
      * Restore black list from SharedPreferences.
      *
-     * @return  List of {@link com.reindeercrafts.notificationpeek.blacklist.AppInfo}.
+     * @return List of {@link com.reindeercrafts.notificationpeek.blacklist.AppInfo}.
      */
     private ArrayList<AppInfo> restoreBlackList() {
         ArrayList<AppInfo> blackList = new ArrayList<AppInfo>();
@@ -113,8 +120,8 @@ public class AppList {
     /**
      * Check if the package name is in black list.
      *
-     * @param packageName   Given package name.
-     * @return              True if it is in black list, False otherwise.
+     * @param packageName Given package name.
+     * @return True if it is in black list, False otherwise.
      */
     public boolean isInBlackList(String packageName) {
         for (AppInfo appInfo : mCurrentBlackList) {

@@ -6,8 +6,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -50,8 +48,6 @@ public class NotificationPeekActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        getWindow().setBackgroundDrawable(new ColorDrawable(Color.BLACK));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
         );
@@ -163,8 +159,8 @@ public class NotificationPeekActivity extends Activity {
                     .getChildAt(nextNotificationIndex).getTag();
 
             if (nextNotification.getNotification().largeIcon != null) {
-                notificationIcon.setImageBitmap(NotificationPeekViewUtils
-                        .getRoundedShape(nextNotification.getNotification().largeIcon));
+                notificationIcon.setImageDrawable(NotificationPeekViewUtils
+                        .getRoundedShape(notificationIcon, nextNotification.getNotification().largeIcon));
             } else {
                 notificationIcon.setImageDrawable(
                         NotificationPeekViewUtils.getIconFromResource(this, nextNotification));
@@ -194,6 +190,8 @@ public class NotificationPeekActivity extends Activity {
                 // Otherwise, highlight that icon.
                 mNotificationsContainer.getChildAt(nextNotificationIndex).setAlpha(1);
             }
+            // Recover TextView alpha, because we will still have notification(s) to show.
+            mPeek.updateNotificationTextAlpha(1);
 
             return true;
         }
