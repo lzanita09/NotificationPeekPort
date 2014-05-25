@@ -133,6 +133,8 @@ public class NotificationService extends NotificationListenerService {
         intentFilter.addAction(ACTION_DISMISS_NOTIFICATION);
         intentFilter.addAction(ACTION_PREFERENCE_CHANGED);
 
+        // Receive wallpaper change action to inform NotificationPeek to update background.
+        intentFilter.addAction(Intent.ACTION_WALLPAPER_CHANGED);
         registerReceiver(mReceiver, intentFilter);
     }
 
@@ -162,6 +164,8 @@ public class NotificationService extends NotificationListenerService {
                         changedKey.equals(PreferenceKeys.PREF_RADIUS)) {
                     mNotificationPeek.updateBackgroundImageView();
                 }
+            } else if (action.equals(Intent.ACTION_WALLPAPER_CHANGED)) {
+                mNotificationPeek.updateBackgroundImageView();
             }
         }
     }

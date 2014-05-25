@@ -28,25 +28,30 @@ public class WallpaperFactory {
     // SharedPreferenes value for system wallpaper.
     public static final int BACKGROUND_SYSTEM_WALLPAPER = 2;
 
+    private WallpaperManager mWallpaperManager;
+    private Context mContext;
+
+    public WallpaperFactory(Context context) {
+        this.mContext = context;
+        mWallpaperManager = WallpaperManager.getInstance(context);
+    }
+
     /**
      * Create a bitmap that is blurred and dimmed with the amount that user has selected.
      *
-     * @param context   Context object.
      * @return          Background bitmap.
      */
-    public static Bitmap getPrefSystemWallpaper(Context context) {
+    public Bitmap getPrefSystemWallpaper() {
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
         float radius = preferences
                 .getFloat(PreferenceKeys.PREF_RADIUS, ImageBlurrer.MAX_SUPPORTED_BLUR_PIXELS);
         int dim = preferences.getInt(PreferenceKeys.PREF_DIM, DEFAULT_MAX_DIM);
 
-        WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
-
         // Blur
-        ImageBlurrer imageBlurrer = new ImageBlurrer(context);
+        ImageBlurrer imageBlurrer = new ImageBlurrer(mContext);
         Bitmap blurred = imageBlurrer
-                .blurBitmap(drawableToBitmap(wallpaperManager.getFastDrawable()), radius);
+                .blurBitmap(drawableToBitmap(mWallpaperManager.getFastDrawable()), radius);
         // Dim
         Canvas c = new Canvas(blurred);
         c.drawColor(Color.argb(255 - dim, 0, 0, 0));
@@ -60,7 +65,7 @@ public class WallpaperFactory {
      * @param drawable      Drawable object to be converted.
      * @return              converted bitmap.
      */
-    private static Bitmap drawableToBitmap(Drawable drawable) {
+    private Bitmap drawableToBitmap(Drawable drawable) {
         if (drawable instanceof BitmapDrawable) {
             return ((BitmapDrawable) drawable).getBitmap();
         }
@@ -78,11 +83,10 @@ public class WallpaperFactory {
     /**
      * Check if user selected system wallpaper as Peek background.
      *
-     * @param context   Context object.
      * @return          True if system wallpaper is selected, false otherwise.
      */
-    public static  boolean isWallpaperThemeSelected(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context)
+    public  boolean isWallpaperThemeSelected() {
+        return PreferenceManager.getDefaultSharedPreferences(mContext)
                 .getInt(PreferenceKeys.PREF_BACKGROUND, BACKGROUND_PURE_BLACK) ==
                 BACKGROUND_SYSTEM_WALLPAPER;
     }

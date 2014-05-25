@@ -1,0 +1,3 @@
+<resources>
+    <dimen name="notification_icon_size">64dp</dimen>
+</resources>

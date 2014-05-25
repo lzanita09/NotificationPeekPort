@@ -78,6 +78,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private KeyguardManager mKeyguardManager;
     private PowerManager mPowerManager;
     private DevicePolicyManager mDevicePolicyManager;
+    private WallpaperFactory mWallpaperFactory;
 
     private PowerManager.WakeLock mPartialWakeLock;
     private PowerManager.WakeLock mScreenWakeLock;
@@ -123,6 +124,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         mContext = context;
 
         mNotificationHelper = new NotificationHelper(context, this);
+        mWallpaperFactory = new WallpaperFactory(context);
 
         mSensorHandler = new SensorActivityHandler(context, this);
         mHandler = new Handler(Looper.getMainLooper());
@@ -314,7 +316,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
      */
     public void updateBackgroundImageView() {
 
-        boolean used = WallpaperFactory.isWallpaperThemeSelected(mContext);
+        boolean used = mWallpaperFactory.isWallpaperThemeSelected();
 
         if (mPeekBackgroundImageView == null) {
             mPeekBackgroundImageView = new ImageView(mContext);
@@ -327,7 +329,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
         if (used) {
             mPeekBackgroundImageView
-                    .setImageBitmap(WallpaperFactory.getPrefSystemWallpaper(mContext));
+                    .setImageBitmap(mWallpaperFactory.getPrefSystemWallpaper());
             if (!isBackgroundImageViewAdded()) {
                 sPeekView.addView(mPeekBackgroundImageView, 0);
             }

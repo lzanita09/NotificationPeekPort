@@ -39,6 +39,8 @@ public class AppearanceSettingsFragment extends Fragment
 
     private Handler mHandler;
 
+    private WallpaperFactory mWallpaperFactory;
+
     private Spinner mBackgroundSpinner;
     private boolean mNothingSelected = true;
 
@@ -55,6 +57,7 @@ public class AppearanceSettingsFragment extends Fragment
                              Bundle savedInstanceState) {
 
         mHandler = new Handler(Looper.getMainLooper());
+        mWallpaperFactory = new WallpaperFactory(getActivity());
 
         mPreviewImageDrawable = initPreviewBackgroundDrawable();
 
@@ -90,19 +93,18 @@ public class AppearanceSettingsFragment extends Fragment
      * Create a new {@link android.graphics.drawable.TransitionDrawable} object with correct order
      * of Drawables based on user selection.
      *
-     * @return  TransitionDrawable object created.
+     * @return TransitionDrawable object created.
      */
     private TransitionDrawable initPreviewBackgroundDrawable() {
         Drawable[] drawables;
 
-        boolean isWallpaperSelected = WallpaperFactory.isWallpaperThemeSelected(getActivity());
+        boolean isWallpaperSelected = mWallpaperFactory.isWallpaperThemeSelected();
         Drawable black = new ColorDrawable(Color.BLACK);
-        Drawable wallpaper = new BitmapDrawable(getResources(),
-                WallpaperFactory.getPrefSystemWallpaper(getActivity()));
+        Drawable wallpaper =
+                new BitmapDrawable(getResources(), mWallpaperFactory.getPrefSystemWallpaper());
 
-        drawables = !isWallpaperSelected ?
-                new Drawable[]{black, wallpaper} :
-                new Drawable[]{wallpaper, black};
+        drawables =
+                !isWallpaperSelected ? new Drawable[]{black, wallpaper} : new Drawable[]{wallpaper, black};
 
         return new TransitionDrawable(drawables);
     }
@@ -118,7 +120,7 @@ public class AppearanceSettingsFragment extends Fragment
         int dim = preferences.getInt(PreferenceKeys.PREF_DIM, WallpaperFactory.DEFAULT_MAX_DIM);
 
         mRadiusSeek.setProgress(radius);
-        mDimSeek.setProgress(dim);
+        mDimSeek.setProgress(255 - dim);
 
         mRadiusSeek.setOnSeekBarChangeListener(this);
         mDimSeek.setOnSeekBarChangeListener(this);
@@ -130,11 +132,11 @@ public class AppearanceSettingsFragment extends Fragment
      * TransitionDrawable.
      *
      * @param T target drawable class.
-     * @return  Index of the source drawable.
+     * @return Index of the source drawable.
      */
     private int getSourceDrawableIndex(Class T) {
-        if (mPreviewImageDrawable.getDrawable(0).getClass().equals(T) &&
-                mPreviewImageDrawable.getDrawable(1).getClass().equals(T)) {
+        if (mPreviewImageDrawable.getDrawable(0).getClass()
+                .equals(mPreviewImageDrawable.getDrawable(1).getClass())) {
             // At this point we know that user is using the SeekBar to adjust background, so that
             // we have two Drawables having the same type. Therefore, we return the last index of
             // the TransitionDrawable, which points to the "Current" drawable that user chooses.
@@ -149,10 +151,10 @@ public class AppearanceSettingsFragment extends Fragment
     /**
      * Update layout components (SeekBar, TextView, ImageView) according to the new preference.
      *
-     * @param manual    If the update is from user or from the initialization.
+     * @param manual If the update is from user or from the initialization.
      */
     private void updateLayouts(boolean manual) {
-        if (!WallpaperFactory.isWallpaperThemeSelected(getActivity())) {
+        if (!mWallpaperFactory.isWallpaperThemeSelected()) {
             // Using pure black.
             if (!manual) {
                 mBackgroundSpinner.setSelection(0);
@@ -177,6 +179,15 @@ public class AppearanceSettingsFragment extends Fragment
         }
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // Inform Notification Peek to update Peek view background.
+        Intent intent = new Intent(NotificationService.ACTION_PREFERENCE_CHANGED);
+        intent.putExtra(PreferenceKeys.INTENT_ACTION_KEY, PreferenceKeys.PREF_BACKGROUND);
+        getActivity().sendBroadcast(intent);
+    }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -200,9 +211,7 @@ public class AppearanceSettingsFragment extends Fragment
 
         mHandler.postDelayed(mChangePreviewRunnable, 300);
 
-        Intent intent = new Intent(NotificationService.ACTION_PREFERENCE_CHANGED);
-        intent.putExtra(PreferenceKeys.INTENT_ACTION_KEY, PreferenceKeys.PREF_BACKGROUND);
-        getActivity().sendBroadcast(intent);
+
     }
 
     @Override
@@ -236,13 +245,6 @@ public class AppearanceSettingsFragment extends Fragment
     public void onStopTrackingTouch(SeekBar seekBar) {
         // Change preview background.
         mHandler.postDelayed(mReloadPreviewRunnable, 300);
-
-        // Inform NotificationPeek to update background image.
-        Intent intent = new Intent(NotificationService.ACTION_PREFERENCE_CHANGED);
-        String intentActionKey = seekBar.getId() ==
-                R.id.radius_seek ? PreferenceKeys.PREF_RADIUS : PreferenceKeys.PREF_DIM;
-        intent.putExtra(PreferenceKeys.INTENT_ACTION_KEY, intentActionKey);
-        getActivity().sendBroadcast(intent);
     }
 
     private Runnable mReloadPreviewRunnable = new Runnable() {
@@ -250,7 +252,7 @@ public class AppearanceSettingsFragment extends Fragment
         public void run() {
             mPreviewImageDrawable = new TransitionDrawable(new Drawable[]{mPreviewImageDrawable
                     .getDrawable(getSourceDrawableIndex(ColorDrawable.class)), new BitmapDrawable(
-                    getResources(), WallpaperFactory.getPrefSystemWallpaper(getActivity()))}
+                    getResources(), mWallpaperFactory.getPrefSystemWallpaper())}
             );
             mPreviewImageView.setImageDrawable(mPreviewImageDrawable);
             mPreviewImageDrawable.startTransition(TRANSITION_ANIM_DURATION);
@@ -263,11 +265,9 @@ public class AppearanceSettingsFragment extends Fragment
             // Build a new TransitionDrawable that presents the change of preview images.
             Drawable[] previewDrawables = new Drawable[2];
 
-            previewDrawables[1] =
-                    WallpaperFactory.isWallpaperThemeSelected(getActivity()) ? new BitmapDrawable(
-                            getResources(), WallpaperFactory
-                            .getPrefSystemWallpaper(getActivity())) : new ColorDrawable(
-                            Color.BLACK);
+            previewDrawables[1] = mWallpaperFactory.isWallpaperThemeSelected() ? new BitmapDrawable(
+                    getResources(), mWallpaperFactory.getPrefSystemWallpaper()
+            ) : new ColorDrawable(Color.BLACK);
             previewDrawables[0] = mPreviewImageDrawable
                     .getDrawable(getSourceDrawableIndex(previewDrawables[1].getClass()));
 
