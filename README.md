@@ -41,3 +41,4 @@ Because the Device Administrator disables apps that is activated from being unin
 * **[Paranoid Android](http://paranoidandroid.co/)** and its open source **[AOSPA project](https://github.com/AOSPA)**.
 * Icon by **[Jeppe Foldager](https://plus.google.com/+JeppeFoldager/about)**
 * **[AcDisplay](https://github.com/AChep/AcDisplay)**
+* Evelio Tarazona Cáceres and his **[ RoundedAvatarDrawable](https://gist.github.com/eveliotc/6051367)**
