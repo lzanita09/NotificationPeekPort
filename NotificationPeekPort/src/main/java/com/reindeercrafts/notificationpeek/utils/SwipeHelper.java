@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.OvershootInterpolator;
 
 public class SwipeHelper implements Gefingerpoken {
     static final String TAG = "com.android.systemui.SwipeHelper";
@@ -315,6 +316,7 @@ public class SwipeHelper implements Gefingerpoken {
         final View animView = mCallback.getChildContentView(view);
         final boolean canAnimViewBeDismissed = mCallback.canChildBeDismissed(animView);
         ObjectAnimator anim = createTranslationAnimation(animView, 0);
+        anim.setInterpolator(new OvershootInterpolator(2.5f));
         int duration = SNAP_ANIM_LEN;
         anim.setDuration(duration);
         anim.addUpdateListener(new AnimatorUpdateListener() {

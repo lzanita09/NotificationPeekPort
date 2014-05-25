@@ -31,8 +31,25 @@ public class WallpaperFactory {
     private WallpaperManager mWallpaperManager;
     private Context mContext;
 
+    /**
+     * Check if live wallpaper is used.
+     *
+     * @param context   Context object.
+     * @return          True if live wallpaper is used, false otherwise.
+     */
     public static boolean isLiveWallpaperUsed(Context context) {
         return WallpaperManager.getInstance(context).getWallpaperInfo() != null;
+    }
+
+    /**
+     * Check if user selected system wallpaper as Peek background.
+     *
+     * @return True if system wallpaper is selected, false otherwise.
+     */
+    public static boolean isWallpaperThemeSelected(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getInt(PreferenceKeys.PREF_BACKGROUND, BACKGROUND_PURE_BLACK) ==
+                BACKGROUND_SYSTEM_WALLPAPER;
     }
 
     public WallpaperFactory(Context context) {
@@ -94,14 +111,5 @@ public class WallpaperFactory {
         return cropped;
     }
 
-    /**
-     * Check if user selected system wallpaper as Peek background.
-     *
-     * @return True if system wallpaper is selected, false otherwise.
-     */
-    public boolean isWallpaperThemeSelected() {
-        return PreferenceManager.getDefaultSharedPreferences(mContext)
-                .getInt(PreferenceKeys.PREF_BACKGROUND, BACKGROUND_PURE_BLACK) ==
-                BACKGROUND_SYSTEM_WALLPAPER;
-    }
+
 }

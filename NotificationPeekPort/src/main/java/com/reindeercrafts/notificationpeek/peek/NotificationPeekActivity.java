@@ -53,7 +53,8 @@ public class NotificationPeekActivity extends Activity {
                         WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
         );
 
-        if (WallpaperFactory.isLiveWallpaperUsed(this)) {
+        if (WallpaperFactory.isLiveWallpaperUsed(this) &&
+                WallpaperFactory.isWallpaperThemeSelected(this)) {
             setTheme(R.style.AppTheme_Peek_Wallpaper);
         } else {
             setTheme(R.style.AppTheme_Peek);

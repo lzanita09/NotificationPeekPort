@@ -104,7 +104,7 @@ public class AppearanceSettingsFragment extends Fragment
      */
     private TransitionDrawable initPreviewBackgroundDrawable() {
 
-        boolean isWallpaperSelected = mWallpaperFactory.isWallpaperThemeSelected();
+        boolean isWallpaperSelected = WallpaperFactory.isWallpaperThemeSelected(getActivity());
         Drawable black = new ColorDrawable(Color.BLACK);
         Drawable wallpaper =
                 mUseLiveWallpaper ? new ColorDrawable(Color.TRANSPARENT) : new BitmapDrawable(
@@ -160,7 +160,7 @@ public class AppearanceSettingsFragment extends Fragment
      * @param manual If the update is from user or from the initialization.
      */
     private void updateLayouts(boolean manual) {
-        if (!mWallpaperFactory.isWallpaperThemeSelected()) {
+        if (!WallpaperFactory.isWallpaperThemeSelected(getActivity())) {
             // Using pure black.
             if (!manual) {
                 mBackgroundSpinner.setSelection(0);
@@ -276,10 +276,9 @@ public class AppearanceSettingsFragment extends Fragment
                 mAdjusted = false;
                 mChangeDrawables[1] = mChangeDrawables[mBlackDrawableIndex];
                 mChangeDrawables[0] = mAdjustDrawables[1];
-
                 mPreviewImageDrawable = new TransitionDrawable(mChangeDrawables);
+                mPreviewImageView.setImageDrawable(mPreviewImageDrawable);
             }
-            mPreviewImageView.setImageDrawable(mPreviewImageDrawable);
 
             updateLayouts(true);
         }

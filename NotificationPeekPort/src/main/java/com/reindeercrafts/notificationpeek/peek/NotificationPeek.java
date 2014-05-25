@@ -315,7 +315,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
      */
     public void updateBackgroundImageView() {
 
-        boolean used = mWallpaperFactory.isWallpaperThemeSelected() && !WallpaperFactory.isLiveWallpaperUsed(mContext);
+        boolean used = WallpaperFactory.isWallpaperThemeSelected(mContext) &&
+                !WallpaperFactory.isLiveWallpaperUsed(mContext);
 
         if (mPeekBackgroundImageView == null) {
             mPeekBackgroundImageView = new ImageView(mContext);
@@ -327,8 +328,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         }
 
         if (used) {
-            mPeekBackgroundImageView
-                    .setImageBitmap(mWallpaperFactory.getPrefSystemWallpaper());
+            mPeekBackgroundImageView.setImageBitmap(mWallpaperFactory.getPrefSystemWallpaper());
             if (!isBackgroundImageViewAdded()) {
                 sPeekView.addView(mPeekBackgroundImageView, 0);
             }
