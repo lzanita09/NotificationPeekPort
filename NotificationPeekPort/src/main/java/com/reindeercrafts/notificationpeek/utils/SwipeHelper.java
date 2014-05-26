@@ -51,6 +51,7 @@ public class SwipeHelper implements Gefingerpoken {
     private int MAX_ESCAPE_ANIMATION_DURATION = 400; // ms
     private int MAX_DISMISS_VELOCITY = 2000; // dp/sec
     private static final int SNAP_ANIM_LEN = SLOW_ANIMATIONS ? 1000 : 150; // ms
+    private static final int OVERSHOOT_DURATION = 300;
 
     public static float ALPHA_FADE_START = 0f; // fraction of thumbnail width
     // where fade starts
@@ -317,7 +318,7 @@ public class SwipeHelper implements Gefingerpoken {
         final boolean canAnimViewBeDismissed = mCallback.canChildBeDismissed(animView);
         ObjectAnimator anim = createTranslationAnimation(animView, 0);
         anim.setInterpolator(new OvershootInterpolator(2.5f));
-        int duration = SNAP_ANIM_LEN;
+        int duration = OVERSHOOT_DURATION;
         anim.setDuration(duration);
         anim.addUpdateListener(new AnimatorUpdateListener() {
             public void onAnimationUpdate(ValueAnimator animation) {
