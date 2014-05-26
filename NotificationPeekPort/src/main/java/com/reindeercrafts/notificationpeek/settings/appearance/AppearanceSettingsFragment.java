@@ -67,6 +67,7 @@ public class AppearanceSettingsFragment extends Fragment
 
         mUseLiveWallpaper = WallpaperFactory.isLiveWallpaperUsed(getActivity());
         mPreviewImageDrawable = initPreviewBackgroundDrawable();
+        mPreviewImageDrawable.setCrossFadeEnabled(true);
 
         View rootView = inflater.inflate(R.layout.appearance_fragment_layout, container, false);
 
