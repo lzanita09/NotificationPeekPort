@@ -136,8 +136,7 @@ public class AppearanceSettingsFragment extends Fragment
 
     /**
      * Seek Drawable index within TransitionDrawable object. We need to find the index of the
-     * drawable that is different from the parameter, which is the starting drawable of the
-     * TransitionDrawable.
+     * drawable that is the starting drawable of the TransitionDrawable.
      *
      * @return Index of the source drawable.
      */
