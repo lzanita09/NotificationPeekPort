@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.blacklist.AppInfo;
@@ -60,10 +61,14 @@ public class BlackListSuggestionFragment extends Fragment
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // User has clicked one item, add it to current black list.
         AppInfo appInfo = (AppInfo) parent.getAdapter().getItem(position);
-        mAppList.addToBlackList(appInfo);
-        if (mCallback != null) {
-            mCallback.onSuggestionSelected();
+        if(mAppList.addToBlackList(appInfo)) {
+            if (mCallback != null) {
+                mCallback.onSuggestionSelected();
+            }
+        } else {
+            Toast.makeText(getActivity(), R.string.peek_disabled, Toast.LENGTH_SHORT).show();
         }
+
     }
 
     /**

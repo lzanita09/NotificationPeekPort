@@ -48,5 +48,11 @@
     <string name="appearance_settings_sum">Change Peek view appearances</string>
     <string name="radius">Blur Radius</string>
     <string name="dim">Dim</string>
+    <string name="everything">All apps are in black list</string>
+    <string name="quiet_hour">Set Quiet Hour</string>
+    <string name="disable_peek">Disable Peek</string>
+    <string name="from">From</string>
+    <string name="to">To</string>
+    <string name="peek_disabled">Peek is already disabled</string>
 
 </resources>

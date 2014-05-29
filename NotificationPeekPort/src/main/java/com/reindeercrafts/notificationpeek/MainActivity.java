@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.reindeercrafts.notificationpeek.blacklist.BlackListActivity;
 import com.reindeercrafts.notificationpeek.dialogs.DialogHelper;
+import com.reindeercrafts.notificationpeek.peek.NotificationHelper;
 import com.reindeercrafts.notificationpeek.settings.Settings;
 import com.reindeercrafts.notificationpeek.utils.AccessChecker;
 import com.reindeercrafts.notificationpeek.utils.SensorHelper;
@@ -76,7 +77,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             isAccessEnabled = false;
         }
 
-        if (!isAccessEnabled) {
+        if (!isAccessEnabled || NotificationHelper.isPeekDisabled(this)) {
             SpannableString spannableString =
                     new SpannableString(getString(R.string.instruction_start));
             spannableString.setSpan(

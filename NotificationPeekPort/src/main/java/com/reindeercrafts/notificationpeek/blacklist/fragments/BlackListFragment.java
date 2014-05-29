@@ -15,7 +15,7 @@ import com.reindeercrafts.notificationpeek.blacklist.utils.SwipeDismissListViewT
 
 /**
  * Main black list fragment used to display user preference black list.
- *
+ * <p/>
  * Created by zhelu on 5/21/14.
  */
 public class BlackListFragment extends Fragment {
@@ -72,8 +72,9 @@ public class BlackListFragment extends Fragment {
      * Reload black list and display.
      */
     public void updateBlackList() {
-        mAppInfoAdapter = new AppInfoAdapter(getActivity(), R.layout.black_list_item_laout,
-                mAppList.getCurrentBlackList());
+        mAppInfoAdapter =
+                new AppInfoAdapter((android.support.v4.app.FragmentActivity) getActivity(),
+                        mAppList, R.layout.black_list_item_laout, mAppList.getCurrentBlackList());
         mBlackListView.setAdapter(mAppInfoAdapter);
     }
 }

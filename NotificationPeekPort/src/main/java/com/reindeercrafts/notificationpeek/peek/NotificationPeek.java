@@ -103,7 +103,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     private boolean mEnabled = true;
     private boolean mAnimating;
 
-    private boolean mEventsRegistered = false;
+    private boolean mEventsRegistered;
 
     private NotificationHub mNotificationHub;
 
@@ -283,7 +283,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         };
         mNotificationsContainer.setId(NOTIFICATION_CONTAINER_ID);
         mNotificationsContainer.setColumnCount(COL_NUM);
-        mNotificationsContainer.setOrientation(LinearLayout.HORIZONTAL);
+        mNotificationsContainer.setOrientation(GridLayout.HORIZONTAL);
         mNotificationsContainer.setPadding(0,
                 mContext.getResources().getDimensionPixelSize(R.dimen.item_padding) * 2, 0, 0);
         LayoutTransition transitioner = new LayoutTransition();
@@ -532,7 +532,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         updateNotificationIcons();
     }
 
-    public void updateNotificationIcons() {
+    private void updateNotificationIcons() {
         mNotificationsContainer.removeAllViews();
         int iconSize =
                 mContext.getResources().getDimensionPixelSize(R.dimen.small_notification_icon_size);
@@ -674,6 +674,14 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         sPeekView = null;
     }
 
+    public void unregisterEventListeners() {
+        if (mEventsRegistered) {
+            mSensorHandler.unregisterEventListeners();
+            mEventsRegistered = false;
+        }
+
+    }
+
     @Override
     public void onPocketModeChanged(boolean inPocket) {
         // If we set to use always listening, if we detect the device is out of pocket,
@@ -706,7 +714,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     }
 
     @Override
-    public void onScreenStateChaged(boolean screenOn) {
+    public void onScreenStateChanged(boolean screenOn) {
         if (!screenOn) {
             mHandler.removeCallbacksAndMessages(null);
             dismissNotification();

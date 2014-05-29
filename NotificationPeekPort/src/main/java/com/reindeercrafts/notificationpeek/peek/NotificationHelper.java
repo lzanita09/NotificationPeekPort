@@ -22,12 +22,15 @@ import android.graphics.LightingColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+
+import com.reindeercrafts.notificationpeek.settings.PreferenceKeys;
 
 public class NotificationHelper {
 
@@ -48,6 +51,17 @@ public class NotificationHelper {
     }
 
     // Static methods
+
+    /**
+     * Check if Peek is disabled from the black list settings.
+     *
+     * @param context
+     * @return          True if "Everything" is selected in black list. False otherwise.
+     */
+    public static boolean isPeekDisabled(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(PreferenceKeys.PREF_DISABLE_PEEK, false);
+    }
 
     public static boolean shouldDisplayNotification(StatusBarNotification oldNotif,
                                                     StatusBarNotification newNotif) {

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_margin="@dimen/activity_vertical_margin">
+
+    <ImageView
+        android:layout_width="@dimen/app_icon_size"
+        android:layout_height="@dimen/app_icon_size"
+        android:src="@drawable/ic_launcher"
+        android:layout_marginLeft="@dimen/generic_spacing_medium"
+        android:layout_marginTop="@dimen/generic_spacing_medium"
+        android:padding="@dimen/generic_spacing_medium"
+        android:id="@+id/icon"/>
+
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/everything"
+            style="@style/TitleTextStyle"
+            android:layout_marginLeft="@dimen/activity_vertical_margin"
+            android:layout_marginRight="@dimen/activity_vertical_margin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:id="@+id/everything_header"
+            android:layout_toRightOf="@+id/icon"
+            />
+    <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/from_to_text"
+            style="@style/SecondaryTextStyle"
+            android:layout_below="@+id/everything_header"
+            android:layout_alignLeft="@+id/everything_header"
+            android:layout_marginTop="@dimen/generic_spacing_medium"
+            android:layout_marginBottom="@dimen/generic_spacing_medium"
+            android:visibility="gone"/>
+
+    <ViewSwitcher
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/from_to_text"
+            android:id="@+id/view_switcher"
+            android:inAnimation="@anim/panel_in_anim"
+            android:outAnimation="@anim/panel_out_anim">
+
+        <!-- Front -->
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/everything_header"
+                android:showDividers="middle"
+                android:divider="@android:drawable/divider_horizontal_dark"
+                android:dividerPadding="8dp"
+                android:orientation="vertical"
+                android:id="@+id/options_linear">
+
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/quiet_hour_btn"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:fontFamily="sans-serif-light"
+                    android:text="@string/quiet_hour"
+                    style="?android:borderlessButtonStyle"/>
+
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/as_is_btn"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:fontFamily="sans-serif-light"
+                    android:text="@string/disable_peek"
+                    style="?android:borderlessButtonStyle"/>
+
+        </LinearLayout>
+
+        <!-- Back -->
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_below="@+id/everything_header"
+                android:showDividers="middle"
+                android:divider="@android:drawable/divider_horizontal_dark"
+                android:dividerPadding="8dp"
+                android:orientation="vertical"
+                android:id="@+id/quiet_hour_linear">
+
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/quiet_hour_from_btn"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:fontFamily="sans-serif-light"
+                    android:text="@string/from"
+                    style="?android:borderlessButtonStyle"/>
+
+            <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/quiet_hour_to_btn"
+                    android:padding="@dimen/activity_horizontal_margin"
+                    android:textAppearance="?android:textAppearanceMedium"
+                    android:fontFamily="sans-serif-light"
+                    android:text="@string/to"
+                    style="?android:borderlessButtonStyle"/>
+
+        </LinearLayout>
+
+
+    </ViewSwitcher>
+
+
+
+
+</merge>

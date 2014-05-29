@@ -7,14 +7,25 @@ package com.reindeercrafts.notificationpeek.blacklist;
  */
 public class AppInfo {
 
+    public static final String EVERYTHING_PKG = AppInfo.class.getName() + ".everything";
+    public static final String EVERYTHING_APP_NAME = "Everything";
+
     private static final String DELIMITER = "<>";
 
-    public String appName;
-    public String packageName;
+    private String mAppName;
+    private String mPackageName;
 
     public AppInfo(String mPackageName, String mAppName) {
-        this.appName = mAppName;
-        this.packageName = mPackageName;
+        this.mAppName = mAppName;
+        this.mPackageName = mPackageName;
+    }
+
+    public String getAppName() {
+        return mAppName;
+    }
+
+    public String getPackageName() {
+        return mPackageName;
     }
 
     /**
@@ -25,7 +36,7 @@ public class AppInfo {
      */
     @Override
     public String toString() {
-        return appName;
+        return mAppName;
     }
 
     /**
@@ -34,7 +45,7 @@ public class AppInfo {
      * @return 'package name <> app name' formatted String.
      */
     public String getString() {
-        return packageName + DELIMITER + appName;
+        return mPackageName + DELIMITER + mAppName;
     }
 
     /**
@@ -52,13 +63,17 @@ public class AppInfo {
         return new AppInfo(infos[0], infos[1]);
     }
 
+    public static AppInfo createEverythingInfo() {
+        return new AppInfo(EVERYTHING_PKG, EVERYTHING_APP_NAME);
+    }
+
     @Override
     public boolean equals(Object o) {
-        return ((AppInfo) o).packageName.equals(packageName);
+        return ((AppInfo) o).mPackageName.equals(mPackageName);
     }
 
     @Override
     public int hashCode() {
-        return packageName.hashCode();
+        return mPackageName.hashCode();
     }
 }

@@ -1,9 +1,9 @@
 package com.reindeercrafts.notificationpeek.blacklist;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
@@ -20,7 +20,7 @@ import com.reindeercrafts.notificationpeek.blacklist.fragments.BlackListSuggesti
  *
  * Created by zhelu on 5/21/14.
  */
-public class BlackListActivity extends Activity
+public class BlackListActivity extends FragmentActivity
         implements TextWatcher, BlackListSuggestionFragment.SuggestionCallback,
         View.OnFocusChangeListener {
 

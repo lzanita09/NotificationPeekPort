@@ -26,4 +26,9 @@ public class PreferenceKeys {
     public static final String PREF_BACKGROUND = "background";
     public static final String PREF_RADIUS = "radius";
     public static final String PREF_DIM = "dim";
+
+    // Black list preference keys.
+    public static final String PREF_DISABLE_PEEK = "disable_peek";
+    public static final String PREF_QUIET_HOUR = "quiet_hour";
+    public static final String PREF_QUIET_HOUR_DEF = "NA";
 }
