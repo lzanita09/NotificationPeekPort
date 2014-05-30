@@ -43,3 +43,4 @@ Because the Device Administrator disables apps that is activated from being unin
 * Icon by **[Jeppe Foldager](https://plus.google.com/+JeppeFoldager/about)**
 * **[AcDisplay](https://github.com/AChep/AcDisplay)**
 * Evelio Tarazona Cáceres and his **[ RoundedAvatarDrawable](https://gist.github.com/eveliotc/6051367)**
+* **[Android Better Pickers](https://github.com/derekbrameyer/android-betterpickers)**
