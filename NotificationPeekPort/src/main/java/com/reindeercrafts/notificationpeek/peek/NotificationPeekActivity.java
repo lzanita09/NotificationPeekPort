@@ -168,7 +168,7 @@ public class NotificationPeekActivity extends Activity {
 
             if (nextNotification.getNotification().largeIcon != null) {
                 notificationIcon.setImageDrawable(NotificationPeekViewUtils
-                        .getRoundedShape(notificationIcon,
+                        .getRoundedShape(getResources(),
                                 nextNotification.getNotification().largeIcon));
             } else {
                 notificationIcon.setImageDrawable(

@@ -594,7 +594,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             Bitmap b = n.getNotification().largeIcon;
             if (b != null) {
                 mNotificationIcon.setImageDrawable(
-                        NotificationPeekViewUtils.getRoundedShape(mNotificationIcon, b));
+                        NotificationPeekViewUtils.getRoundedShape(mContext.getResources(), b));
             } else {
                 mNotificationIcon.setImageDrawable(
                         NotificationPeekViewUtils.getIconFromResource(mContext, n));

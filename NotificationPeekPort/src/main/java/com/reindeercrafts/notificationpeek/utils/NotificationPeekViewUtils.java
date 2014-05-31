@@ -3,33 +3,69 @@ package com.reindeercrafts.notificationpeek.utils;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.service.notification.StatusBarNotification;
-import android.view.View;
-import android.widget.ImageView;
 
 import com.reindeercrafts.notificationpeek.R;
 import com.reindeercrafts.notificationpeek.peek.NotificationHelper;
-import com.reindeercrafts.notificationpeek.views.RoundedAvatarDrawable;
 
 /**
  * Utility class that provides methods to get icons and texts from StatusBarNotification.
- *
+ * <p/>
  * Created by zhelu on 5/17/14.
  */
 public class NotificationPeekViewUtils {
 
-    public static Drawable getRoundedShape(ImageView imageView, Bitmap scaleBitmapImage) {
-        final int shadowSize = imageView.getContext().getResources().getDimensionPixelSize(
-                R.dimen.shadow_size);
-        final int shadowColor = imageView.getContext().getResources().getColor(R.color.background_color);
+    /**
+     * Get rounded icon from the Bitmap object, with shade. The shade will only be drawn if
+     * the Bitmap is larger than the ImageView's size.
+     *
+     * @param resources         Resources object for getting size and color.
+     * @param scaleBitmapImage  Source Bitmap.
+     * @return                  Rounded BitmapDrawable with shade (if possible).
+     */
+    public static Drawable getRoundedShape(Resources resources, Bitmap scaleBitmapImage) {
+        final int shadowSize = resources.getDimensionPixelSize(R.dimen.shadow_size);
+        final int shadowColor = resources.getColor(R.color.background_color);
 
-        // Use RoundedAvatarDrawable to convert bitmap to rounded icon with shadow.
-        Drawable rounded = new RoundedAvatarDrawable(scaleBitmapImage, shadowSize, shadowColor);
-        imageView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        return rounded;
+        int targetWidth = scaleBitmapImage.getWidth();
+        int targetHeight = scaleBitmapImage.getHeight();
+        Bitmap targetBitmap =
+                Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888);
+
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setDither(true);
+        Paint shadowPaint = new Paint(paint);
+        RectF rectF = new RectF(0, 0, targetWidth, targetHeight);
+
+        Canvas canvas = new Canvas(targetBitmap);
+
+        final BitmapShader shader =
+                new BitmapShader(scaleBitmapImage, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        paint.setShader(shader);
+
+        // Only apply shadow if the icon is large enough.
+        if (scaleBitmapImage.getWidth() >
+                resources.getDimensionPixelSize(R.dimen.notification_icon_size)) {
+            rectF.inset(shadowSize, shadowSize);
+            shadowPaint.setShadowLayer(shadowSize, 0f, 0f, shadowColor);
+            shadowPaint.setColor(Color.BLACK);
+            canvas.drawOval(rectF, shadowPaint);
+        }
+
+        canvas.drawOval(rectF, paint);
+
+        return new BitmapDrawable(resources, targetBitmap);
     }
 
     public static Drawable getIconFromResource(Context context, StatusBarNotification n) {
