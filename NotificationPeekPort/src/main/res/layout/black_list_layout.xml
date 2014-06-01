@@ -25,7 +25,17 @@
             android:layout_marginTop="@dimen/generic_spacing_medium"
             android:layout_marginLeft="@dimen/activity_vertical_margin"
             android:layout_marginRight="@dimen/activity_vertical_margin"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"/>
+            android:layout_marginBottom="@dimen/generic_spacing_medium"/>
+
+    <CheckBox
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/show_system_apps"
+            android:id="@+id/show_system_app_check"
+            android:layout_marginLeft="@dimen/activity_vertical_margin"
+            android:layout_marginRight="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            style="@style/HeaderTextStyle.Medium"/>
 
     <FrameLayout
             android:layout_width="match_parent"

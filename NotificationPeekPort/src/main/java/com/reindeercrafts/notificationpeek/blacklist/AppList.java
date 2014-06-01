@@ -118,15 +118,32 @@ public class AppList {
             appInfos.add(AppInfo.createEverythingInfo());
         }
 
+        boolean needSystem = shouldExcludeSystemApps(mContext);
         for (ApplicationInfo info : mApplicationInfos) {
             String appName = mPackageManager.getApplicationLabel(info).toString();
-
-            if (appName.toLowerCase().contains(keyWord)) {
+            if (shouldInclude(info, appName, keyWord, needSystem)) {
                 appInfos.add(new AppInfo(info.packageName, appName));
             }
         }
 
         return appInfos;
+    }
+
+    /* Load user preference for excluding system apps. */
+    public static boolean shouldExcludeSystemApps(Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        return preferences.getBoolean(PreferenceKeys.PREF_SYSTEM_APP, true);
+    }
+
+    /* Check if the current ApplicationInfo should be displayed as suggestion. */
+    private boolean shouldInclude(ApplicationInfo info, String appName, String keyWord,
+                                  boolean needSystem) {
+        if (!needSystem) {
+            return (info.flags & ApplicationInfo.FLAG_SYSTEM) == 0 &&
+                    appName.toLowerCase().contains(keyWord);
+        }
+
+        return appName.toLowerCase().contains(keyWord);
     }
 
     /**
@@ -221,8 +238,8 @@ public class AppList {
     /**
      * Check if the posted time of the notification is in quiet hour.
      *
-     * @param postedTime    Timestamp in ms to check.
-     * @return              True if it is in quiet hour, false otherwise.
+     * @param postedTime Timestamp in ms to check.
+     * @return True if it is in quiet hour, false otherwise.
      */
     public boolean isInQuietHour(long postedTime) {
         if (mQuietHour == null) {

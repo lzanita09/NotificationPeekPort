@@ -54,5 +54,6 @@
     <string name="from">From</string>
     <string name="to">To</string>
     <string name="peek_disabled">Peek is already disabled</string>
+    <string name="show_system_apps">Show system apps</string>
 
 </resources>
