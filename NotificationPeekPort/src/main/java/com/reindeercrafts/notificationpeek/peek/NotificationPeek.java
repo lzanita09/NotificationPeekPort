@@ -241,7 +241,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
         mNotificationText.setTypeface(typeface);
         mNotificationText.setGravity(Gravity.CENTER);
         mNotificationText.setEllipsize(TextUtils.TruncateAt.END);
-        mNotificationText.setSingleLine(true);
+        mNotificationText.setSingleLine(false);
+        mNotificationText.setLines(2);
         mNotificationText
                 .setPadding(0, mContext.getResources().getDimensionPixelSize(R.dimen.item_padding),
                         0, 0);
