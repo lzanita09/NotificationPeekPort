@@ -37,15 +37,13 @@ public class NotificationHelper {
     public final static String DELIMITER = "|";
 
     private TelephonyManager mTelephonyManager;
-    private NotificationPeek mPeek;
 
     public boolean mRingingOrConnected = false;
 
     private Context mContext;
 
-    public NotificationHelper(Context context, NotificationPeek peek) {
+    public NotificationHelper(Context context) {
         mContext = context;
-        mPeek = peek;
         mTelephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
         mTelephonyManager.listen(new CallStateListener(), PhoneStateListener.LISTEN_CALL_STATE);
     }
@@ -56,7 +54,7 @@ public class NotificationHelper {
      * Check if Peek is disabled from the black list settings.
      *
      * @param context
-     * @return          True if "Everything" is selected in black list. False otherwise.
+     * @return True if "Everything" is selected in black list. False otherwise.
      */
     public static boolean isPeekDisabled(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
@@ -90,15 +88,37 @@ public class NotificationHelper {
         return true;
     }
 
-    public static String getNotificationTitle(StatusBarNotification n) {
+    /**
+     * Get text from notification with specific field.
+     *
+     * @param n     StatusBarNotification object.
+     * @param field StatusBarNotification extra field.
+     * @return Notification text.
+     */
+    public static String getNotificationText(StatusBarNotification n, String field) {
         String text = null;
         if (n != null) {
             Notification notification = n.getNotification();
             Bundle extras = notification.extras;
-            text = extras.getString(Notification.EXTRA_TITLE);
+            text = extras.getString(field);
         }
         return text;
     }
+
+    public static String getNotificationTitle(StatusBarNotification n) {
+        return getNotificationText(n, Notification.EXTRA_TITLE);
+    }
+
+    public static String getNotificationContent(StatusBarNotification n) {
+        String content = getNotificationText(n, Notification.EXTRA_TEXT);
+
+        if (content == null) {
+            return n.getNotification().tickerText == null ? "" : n.getNotification().tickerText
+                    .toString();
+        }
+        return content;
+    }
+
 
     public static String getContentDescription(StatusBarNotification content) {
         if (content != null) {
@@ -164,9 +184,9 @@ public class NotificationHelper {
 
     public boolean isSimPanelShowing() {
         int state = mTelephonyManager.getSimState();
-        return state == TelephonyManager.SIM_STATE_PIN_REQUIRED
-                || state == TelephonyManager.SIM_STATE_PUK_REQUIRED
-                || state == TelephonyManager.SIM_STATE_NETWORK_LOCKED;
+        return state == TelephonyManager.SIM_STATE_PIN_REQUIRED ||
+                state == TelephonyManager.SIM_STATE_PUK_REQUIRED ||
+                state == TelephonyManager.SIM_STATE_NETWORK_LOCKED;
     }
 
 

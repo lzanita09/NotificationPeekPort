@@ -18,4 +18,6 @@
     <dimen name="header_text_size">16sp</dimen>
 
     <dimen name="shadow_size">3dip</dimen>
+    <dimen name="content_text_paddings">64dp</dimen>
+    <dimen name="contact_image_height">96dp</dimen>
 </resources>

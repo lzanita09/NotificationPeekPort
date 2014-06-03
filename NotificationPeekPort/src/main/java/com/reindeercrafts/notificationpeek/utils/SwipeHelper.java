@@ -51,7 +51,8 @@ public class SwipeHelper implements Gefingerpoken {
     private int MAX_ESCAPE_ANIMATION_DURATION = 400; // ms
     private int MAX_DISMISS_VELOCITY = 2000; // dp/sec
     private static final int SNAP_ANIM_LEN = SLOW_ANIMATIONS ? 1000 : 150; // ms
-    private static final int OVERSHOOT_DURATION = 300;
+    private static final int OVERSHOOT_DURATION = 300; // ms
+    private static final int SHOW_CONTENT_TIMEOUT = 400;  // ms
 
     public static float ALPHA_FADE_START = 0f; // fraction of thumbnail width
     // where fade starts
@@ -76,6 +77,8 @@ public class SwipeHelper implements Gefingerpoken {
     private View.OnLongClickListener mLongPressListener;
     private Runnable mWatchLongPress;
     private long mLongPressTimeout;
+
+    private Runnable mShowContentRunnable;
 
     public SwipeHelper(int swipeDirection, Callback callback, float densityScale,
                        float pagingTouchSlop) {
@@ -200,6 +203,15 @@ public class SwipeHelper implements Gefingerpoken {
         }
     }
 
+    /* Remove show content Runnable. */
+    public void removeShowContentCallback() {
+        if (mShowContentRunnable != null) {
+            mHandler.removeCallbacks(mShowContentRunnable);
+            mShowContentRunnable = null;
+            mCallback.onHideContentActionDetected();
+        }
+    }
+
     public void removeLongPressCallback() {
         if (mWatchLongPress != null) {
             mHandler.removeCallbacks(mWatchLongPress);
@@ -238,6 +250,17 @@ public class SwipeHelper implements Gefingerpoken {
                         mHandler.postDelayed(mWatchLongPress, mLongPressTimeout);
                     }
 
+                    // Start countdown for displaying notification content.
+                    if (mShowContentRunnable == null) {
+                        mShowContentRunnable = new Runnable() {
+                            @Override
+                            public void run() {
+                                mCallback.onShowContentActionDetected();
+                            }
+                        };
+                    }
+                    mHandler.postDelayed(mShowContentRunnable, SHOW_CONTENT_TIMEOUT);
+
                 }
                 break;
 
@@ -255,6 +278,7 @@ public class SwipeHelper implements Gefingerpoken {
                     }
                 }
 
+                removeShowContentCallback();
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -264,6 +288,7 @@ public class SwipeHelper implements Gefingerpoken {
                 mCurrAnimView = null;
                 mLongPressSent = false;
                 removeLongPressCallback();
+                removeShowContentCallback();
                 break;
         }
         return mDragging;
@@ -401,6 +426,7 @@ public class SwipeHelper implements Gefingerpoken {
         return true;
     }
 
+
     public interface Callback {
         View getChildAtPosition(MotionEvent ev);
 
@@ -415,5 +441,9 @@ public class SwipeHelper implements Gefingerpoken {
         void onDragCancelled(View v);
 
         void onAlphaChanged(float alpha);
+
+        void onShowContentActionDetected();
+
+        void onHideContentActionDetected();
     }
 }

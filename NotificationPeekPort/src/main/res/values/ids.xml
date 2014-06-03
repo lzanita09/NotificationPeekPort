@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="notification_layout" type="id">1</item>
+    <item name="notification_view" type="id">2</item>
+    <item name="notification_icon" type="id">3</item>
+    <item name="notification_text" type="id">4</item>
+    <item name="notification_container" type="id">5</item>
+    <item name="notification_content" type="id">6</item>
+</resources>

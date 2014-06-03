@@ -17,6 +17,7 @@
 package com.reindeercrafts.notificationpeek.peek;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.service.notification.StatusBarNotification;
 import android.util.AttributeSet;
@@ -83,22 +84,22 @@ public class NotificationLayout extends LinearLayout implements SwipeHelper.Call
 
     @Override
     public boolean canChildBeDismissed(View v) {
-        StatusBarNotification n = (StatusBarNotification)
-                mNotificationPeek.getNotificationView().getTag();
+        StatusBarNotification n =
+                (StatusBarNotification) mNotificationPeek.getNotificationView().getTag();
         return n.isClearable();
     }
 
     @Override
     public void onChildDismissed(View v) {
-        StatusBarNotification n = (StatusBarNotification)
-                mNotificationPeek.getNotificationView().getTag();
+        StatusBarNotification n =
+                (StatusBarNotification) mNotificationPeek.getNotificationView().getTag();
         String pkg = n.getPackageName();
         String tag = n.getTag();
         int id = n.getId();
 
         // Dismiss action confirmed, we need to remove the current notification.
-        mNotificationPeek.onChildDismissed(NotificationHelper.getContentDescription(n), pkg, tag,
-                id);
+        mNotificationPeek
+                .onChildDismissed(NotificationHelper.getContentDescription(n), pkg, tag, id);
         mNotificationPeek.setAnimating(false);
     }
 
@@ -115,5 +116,19 @@ public class NotificationLayout extends LinearLayout implements SwipeHelper.Call
     @Override
     public void onAlphaChanged(float alpha) {
         mNotificationPeek.updateNotificationTextAlpha(alpha);
+    }
+
+    @Override
+    public void onShowContentActionDetected() {
+        Intent intent =
+                new Intent(NotificationPeekActivity.NotificationPeekReceiver.ACTION_SHOW_CONTENT);
+        getContext().sendBroadcast(intent);
+    }
+
+    @Override
+    public void onHideContentActionDetected() {
+        Intent intent =
+                new Intent(NotificationPeekActivity.NotificationPeekReceiver.ACTION_HIDE_CONTENT);
+        getContext().sendBroadcast(intent);
     }
 }

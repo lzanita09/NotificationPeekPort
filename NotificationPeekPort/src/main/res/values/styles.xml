@@ -19,6 +19,7 @@
 
     <style name="HeaderTextStyle">
         <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textStyle">normal</item>
     </style>
 
     <style name="HeaderTextStyle.Medium" parent="HeaderTextStyle">

@@ -16,16 +16,19 @@ public class NotificationClicker implements View.OnClickListener {
     private StatusBarNotification mNotification;
     private NotificationPeek mPeek;
 
+
     public NotificationClicker(StatusBarNotification notification, NotificationPeek peek) {
         this.mPendingIntent = notification.getNotification().contentIntent;
         this.mNotification = notification;
         this.mPeek = peek;
     }
 
+
     @Override
     public void onClick(View v) {
         if (mPendingIntent == null) {
-            // There is no content intent in this notification.
+            // There is no content intent in this notification. Or the recent touch event is from
+            // press & hold for displaying content.
             return;
         }
         try {
