@@ -34,7 +34,8 @@ public class PeekLayoutFactory {
 
     // Layout type: notification content & contact.
     public static final int LAYOUT_TYPE_CONTENT = 1;
-    private static final int MIN_IMAGE_WIDTH = 160; // px
+
+    private static final int MIN_IMAGE_WIDTH = 120; // px
 
     public static View createPeekLayout(Context context, int layoutType, Object data) {
         switch (layoutType) {
@@ -77,10 +78,12 @@ public class PeekLayoutFactory {
 
         // Content TextView.
         TextView contentTextView = (TextView) rootLayout.findViewById(R.id.content_text);
+        TextView contentTitleView = (TextView) rootLayout.findViewById(R.id.title_text);
 
         String content = NotificationHelper.getNotificationContent(n);
+        String title = NotificationHelper.getNotificationTitle(n);
         if (!content.startsWith(NotificationHelper.getNotificationTitle(n))) {
-            content = NotificationHelper.getNotificationTitle(n) + "\n" + content;
+            contentTitleView.setText(title);
         }
         contentTextView.setText(content);
 
@@ -89,6 +92,11 @@ public class PeekLayoutFactory {
             int padding =
                     context.getResources().getDimensionPixelSize(R.dimen.content_text_paddings);
             contentTextView.setPadding(
+                    padding,
+                    contentTextView.getPaddingTop(),
+                    padding,
+                    contentTextView.getPaddingBottom());
+            contentTitleView.setPadding(
                     padding,
                     contentTextView.getPaddingTop(),
                     padding,

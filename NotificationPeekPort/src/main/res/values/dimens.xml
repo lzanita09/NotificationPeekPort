@@ -19,5 +19,5 @@
 
     <dimen name="shadow_size">3dip</dimen>
     <dimen name="content_text_paddings">64dp</dimen>
-    <dimen name="contact_image_height">96dp</dimen>
+    <dimen name="contact_image_size">80dp</dimen>
 </resources>

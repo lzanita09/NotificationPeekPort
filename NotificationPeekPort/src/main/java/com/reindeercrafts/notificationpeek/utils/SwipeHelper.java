@@ -275,10 +275,13 @@ public class SwipeHelper implements Gefingerpoken {
                         mInitialTouchPos = getPos(ev) - getTranslation(mCurrAnimView);
 
                         removeLongPressCallback();
+                        removeShowContentCallback();
                     }
+
+
                 }
 
-                removeShowContentCallback();
+
                 break;
 
             case MotionEvent.ACTION_UP:

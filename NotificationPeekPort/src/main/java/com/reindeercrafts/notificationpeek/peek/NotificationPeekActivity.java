@@ -3,7 +3,6 @@ package com.reindeercrafts.notificationpeek.peek;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
-import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -105,14 +105,6 @@ public class NotificationPeekActivity extends Activity {
 
         // Setup OnClickListener.
         mNotificationIcon = (ImageView) mPeekView.findViewById(R.id.notification_icon);
-        StatusBarNotification n = (StatusBarNotification) mNotificationView.getTag();
-        final PendingIntent contentIntent = n.getNotification().contentIntent;
-        if (contentIntent != null) {
-            mNotificationClicker = new NotificationClicker(n, mPeek);
-            mNotificationIcon.setOnClickListener(mNotificationClicker);
-        } else {
-            mNotificationIcon.setOnClickListener(null);
-        }
 
         // Notification snippet TextView.
         mNotificationText = (TextView) mPeekView.findViewById(R.id.notification_text);
@@ -328,6 +320,7 @@ public class NotificationPeekActivity extends Activity {
             // Content is already showing.
             return;
         }
+        Log.d(TAG, "Showing content");
         mContentShowing = true;
         StatusBarNotification selectedNotification =
                 (StatusBarNotification) mNotificationView.getTag();
@@ -343,13 +336,14 @@ public class NotificationPeekActivity extends Activity {
         contentView.setLayoutParams(params);
 
         // Animations.
-        TextView contentTextView = (TextView) contentView.findViewById(R.id.content_text);
-        contentTextView.setTranslationY(50);
+        LinearLayout contentTextLayout =
+                (LinearLayout) contentView.findViewById(R.id.content_layout);
+        contentTextLayout.setTranslationY(50);
         contentView.setAlpha(0);
         mPeekView.addView(contentView);
 
         contentView.animate().alpha(1f).setInterpolator(new DecelerateInterpolator()).start();
-        contentTextView.animate().translationY(0).setInterpolator(new DecelerateInterpolator())
+        contentTextLayout.animate().translationY(0).setInterpolator(new DecelerateInterpolator())
                 .start();
         mNotificationText.animate().alpha(0f).setInterpolator(new DecelerateInterpolator()).start();
         if (mClockTextView != null) {
@@ -366,19 +360,23 @@ public class NotificationPeekActivity extends Activity {
 
         mContentShowing = false;
         final View contentView = mPeekView.findViewById(R.id.notification_content);
-        TextView contentTextView = (TextView) contentView.findViewById(R.id.content_text);
+        LinearLayout contentTextLayout =
+                (LinearLayout) contentView.findViewById(R.id.content_layout);
 
         // Animations.
+        contentTextLayout.animate().translationY(50).setInterpolator(new AccelerateInterpolator())
+                .start();
         contentView.animate().alpha(0f).setInterpolator(new AccelerateInterpolator())
                 .setListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        mPeekView.removeView(contentView);
+                        if (contentView != null) {
+                            mPeekView.removeView(contentView);
+                        }
                     }
                 }).start();
-        contentTextView.animate().translationY(50).setInterpolator(new AccelerateInterpolator())
-                .start();
+
         mNotificationText.animate().alpha(1f).setInterpolator(new AccelerateInterpolator()).start();
 
         if (mClockTextView != null) {

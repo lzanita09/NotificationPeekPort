@@ -19,6 +19,7 @@ package com.reindeercrafts.notificationpeek.peek;
 import android.animation.LayoutTransition;
 import android.app.KeyguardManager;
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.Intent;
@@ -596,6 +597,13 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
             } else {
                 mNotificationIcon.setImageDrawable(
                         NotificationPeekViewUtils.getIconFromResource(mContext, n));
+            }
+
+            final PendingIntent contentIntent = n.getNotification().contentIntent;
+            if (contentIntent != null) {
+                mNotificationIcon.setOnClickListener(new NotificationClicker(n, this));
+            } else {
+                mNotificationIcon.setOnClickListener(null);
             }
 
             mNotificationText

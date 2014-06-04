@@ -100,7 +100,8 @@ public class NotificationHelper {
         if (n != null) {
             Notification notification = n.getNotification();
             Bundle extras = notification.extras;
-            text = extras.getString(field);
+            CharSequence chars = extras.getCharSequence(field);
+            text = chars != null ? chars.toString() : null;
         }
         return text;
     }
