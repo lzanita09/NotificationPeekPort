@@ -52,8 +52,6 @@ public class NotificationPeekActivity extends Activity {
 
     private NotificationPeek mPeek;
 
-    private boolean mContentShowing;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
@@ -193,6 +191,7 @@ public class NotificationPeekActivity extends Activity {
 
             // Set new tag.
             mNotificationView.setTag(nextNotification);
+            mPeek.getNotificationHub().setCurrentNotification(nextNotification);
 
             if (nextNotification.getNotification().contentIntent != null) {
                 NotificationClicker mNotificationClicker =

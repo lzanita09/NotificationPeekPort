@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 
 import com.reindeercrafts.notificationpeek.blacklist.AppList;
 import com.reindeercrafts.notificationpeek.peek.NotificationPeek;
@@ -80,9 +79,6 @@ public class NotificationService extends NotificationListenerService {
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-
-        Log.i(TAG, sbn.getPackageName() + " Notification received:" +
-                sbn.getNotification().tickerText);
 
         Notification postedNotification = sbn.getNotification();
 

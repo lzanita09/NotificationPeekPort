@@ -50,6 +50,11 @@ public class NotificationHub {
         return list;
     }
 
+    private StatusBarNotification getNextNotification() {
+        List<StatusBarNotification> notifications = getNotifications();
+        return notifications.get(notifications.size() - 1);
+    }
+
     public int getNotificationCount() {
         return mNotifications.size();
     }
@@ -70,14 +75,20 @@ public class NotificationHub {
     public void removeNotification(StatusBarNotification notification) {
         mNotifications.remove(notification.getPackageName());
 
-        // If the notification we are to remove is equal to mCurrentNotification, remove the
-        // reference.
+        // If the notification we are to remove is equal to mCurrentNotification, try to find the
+        // one that arrives latest as current notification, otherwise remove it.
         if (NotificationHelper.getContentDescription(notification)
                 .equals(NotificationHelper.getContentDescription(mCurrentNotification))) {
-            mCurrentNotification = null;
+            if (mNotifications.size() > 0) {
+                mCurrentNotification = getNextNotification();
+            } else {
+                mCurrentNotification = null;
+            }
         }
 
     }
+
+
 
 
     private class NotificationTimeComparator implements Comparator<StatusBarNotification> {
