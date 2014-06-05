@@ -1,7 +1,5 @@
 package com.reindeercrafts.notificationpeek.peek;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
@@ -12,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.service.notification.StatusBarNotification;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -55,7 +52,6 @@ public class NotificationPeekActivity extends Activity {
 
     private NotificationPeek mPeek;
 
-    private NotificationClicker mNotificationClicker;
     private boolean mContentShowing;
 
     @Override
@@ -199,7 +195,8 @@ public class NotificationPeekActivity extends Activity {
             mNotificationView.setTag(nextNotification);
 
             if (nextNotification.getNotification().contentIntent != null) {
-                mNotificationClicker = new NotificationClicker(nextNotification, mPeek);
+                NotificationClicker mNotificationClicker =
+                        new NotificationClicker(nextNotification, mPeek);
                 mNotificationIcon.setOnClickListener(mNotificationClicker);
             }
 
@@ -315,36 +312,11 @@ public class NotificationPeekActivity extends Activity {
         icon.setLayoutParams(gridLayoutParams);
     }
 
-    private void showNotificationContent() {
-        if (mContentShowing) {
-            // Content is already showing.
-            return;
-        }
-        Log.d(TAG, "Showing content");
-        mContentShowing = true;
-        StatusBarNotification selectedNotification =
-                (StatusBarNotification) mNotificationView.getTag();
-
-        View contentView = PeekLayoutFactory
-                .createPeekLayout(this, PeekLayoutFactory.LAYOUT_TYPE_CONTENT,
-                        selectedNotification);
-        contentView.setId(R.id.notification_content);
-        RelativeLayout.LayoutParams params =
-                new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT);
-        params.addRule(RelativeLayout.ABOVE, R.id.notification_layout);
-        contentView.setLayoutParams(params);
-
-        // Animations.
-        LinearLayout contentTextLayout =
-                (LinearLayout) contentView.findViewById(R.id.content_layout);
-        contentTextLayout.setTranslationY(50);
-        contentView.setAlpha(0);
-        mPeekView.addView(contentView);
-
-        contentView.animate().alpha(1f).setInterpolator(new DecelerateInterpolator()).start();
-        contentTextLayout.animate().translationY(0).setInterpolator(new DecelerateInterpolator())
-                .start();
+    /**
+     * Animate the small TextView below the icon and the clock TextView and hide them when
+     * the notification content is displayed.
+     */
+    private void hidePeekComponents() {
         mNotificationText.animate().alpha(0f).setInterpolator(new DecelerateInterpolator()).start();
         if (mClockTextView != null) {
             mClockTextView.animate().alpha(0f).setInterpolator(new DecelerateInterpolator())
@@ -352,38 +324,16 @@ public class NotificationPeekActivity extends Activity {
         }
     }
 
-    private void hideNotificationContent() {
-        if (!mContentShowing) {
-            // Content is already hidden.
-            return;
-        }
-
-        mContentShowing = false;
-        final View contentView = mPeekView.findViewById(R.id.notification_content);
-        LinearLayout contentTextLayout =
-                (LinearLayout) contentView.findViewById(R.id.content_layout);
-
-        // Animations.
-        contentTextLayout.animate().translationY(50).setInterpolator(new AccelerateInterpolator())
-                .start();
-        contentView.animate().alpha(0f).setInterpolator(new AccelerateInterpolator())
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        super.onAnimationEnd(animation);
-                        if (contentView != null) {
-                            mPeekView.removeView(contentView);
-                        }
-                    }
-                }).start();
-
+    /**
+     * Bring the small TextView and the clock TextView back when the notification content
+     * is removed.
+     */
+    private void showPeekComponents() {
         mNotificationText.animate().alpha(1f).setInterpolator(new AccelerateInterpolator()).start();
-
         if (mClockTextView != null) {
             mClockTextView.animate().alpha(1f).setInterpolator(new AccelerateInterpolator())
                     .start();
         }
-
     }
 
     /**
@@ -447,10 +397,10 @@ public class NotificationPeekActivity extends Activity {
                 updateNotificationIcons();
             } else if (intent.getAction().equals(ACTION_SHOW_CONTENT)) {
                 // Display current notification's content.
-                showNotificationContent();
+                hidePeekComponents();
             } else if (intent.getAction().equals(ACTION_HIDE_CONTENT)) {
                 // Hide notification content view.
-                hideNotificationContent();
+                showPeekComponents();
             }
         }
     }

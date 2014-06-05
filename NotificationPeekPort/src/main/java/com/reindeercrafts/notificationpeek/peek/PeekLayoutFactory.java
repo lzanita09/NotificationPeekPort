@@ -84,6 +84,8 @@ public class PeekLayoutFactory {
         String title = NotificationHelper.getNotificationTitle(n);
         if (!content.startsWith(NotificationHelper.getNotificationTitle(n))) {
             contentTitleView.setText(title);
+        } else {
+            contentTextView.setVisibility(View.GONE);
         }
         contentTextView.setText(content);
 

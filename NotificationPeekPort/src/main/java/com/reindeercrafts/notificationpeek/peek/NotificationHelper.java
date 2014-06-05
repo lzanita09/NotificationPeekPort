@@ -106,12 +106,38 @@ public class NotificationHelper {
         return text;
     }
 
+    /**
+     * Get multi-line text content from notification.
+     *
+     * @param n     StatusBarNotification object.
+     * @return      Notification text.
+     */
+    public static String getNotificationTextLines(StatusBarNotification n) {
+        Notification notification = n.getNotification();
+        CharSequence[] textLines =
+                notification.extras.getCharSequenceArray(Notification.EXTRA_TEXT_LINES);
+
+        StringBuffer buffer = new StringBuffer();
+        if (textLines != null) {
+            for (CharSequence line : textLines) {
+                buffer.append(line);
+                buffer.append('\n');
+            }
+        }
+
+        return buffer.toString();
+    }
+
     public static String getNotificationTitle(StatusBarNotification n) {
         return getNotificationText(n, Notification.EXTRA_TITLE);
     }
 
     public static String getNotificationContent(StatusBarNotification n) {
-        String content = getNotificationText(n, Notification.EXTRA_TEXT);
+        String content = getNotificationTextLines(n);
+
+        if (content.length() == 0) {
+            content = getNotificationText(n, Notification.EXTRA_TEXT);
+        }
 
         if (content == null) {
             return n.getNotification().tickerText == null ? "" : n.getNotification().tickerText

@@ -208,8 +208,8 @@ public class SwipeHelper implements Gefingerpoken {
         if (mShowContentRunnable != null) {
             mHandler.removeCallbacks(mShowContentRunnable);
             mShowContentRunnable = null;
-            mCallback.onHideContentActionDetected();
         }
+        mCallback.onHideContentActionDetected();
     }
 
     public void removeLongPressCallback() {
@@ -370,6 +370,7 @@ public class SwipeHelper implements Gefingerpoken {
             // We are not doing anything, make sure the long press callback
             // is not still ticking like a bomb waiting to go off.
             removeLongPressCallback();
+            removeShowContentCallback();
             return false;
         }
 
