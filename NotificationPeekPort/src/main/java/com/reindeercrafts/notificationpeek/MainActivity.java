@@ -140,7 +140,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
         final Notification.Builder builder = new Notification.Builder(this);
         builder.setSmallIcon(R.drawable.ic_launcher)
                 .setTicker(getString(R.string.diagnosis_notification_title))
-                .setContentTitle(getString(R.string.diagnosis_notification_title))
+                .setContentTitle(getString(R.string.diagnosis_notification_title_content))
                 .setContentText(getString(R.string.diagnosis_notification_content))
                 .setLights(Color.GREEN, 1000, 5000)
                 .setAutoCancel(true)
