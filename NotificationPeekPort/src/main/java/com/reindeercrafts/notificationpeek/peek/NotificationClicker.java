@@ -33,12 +33,12 @@ public class NotificationClicker implements View.OnClickListener {
         }
         try {
             mPendingIntent.send();
-            mPeek.dismissNotification();
-            mPeek.removeNotification(mNotification);
-            mPeek.onPostClick();
-
         } catch (PendingIntent.CanceledException e) {
             e.printStackTrace();
         }
+
+        mPeek.dismissNotification();
+        mPeek.removeNotification(mNotification);
+        mPeek.onPostClick();
     }
 }
