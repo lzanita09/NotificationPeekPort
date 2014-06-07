@@ -23,11 +23,6 @@ public class NotificationClicker implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (mPendingIntent == null) {
-            // There is no content intent in this notification. Or the recent touch event is from
-            // press & hold for displaying content.
-            return;
-        }
         try {
             mPendingIntent.send();
         } catch (PendingIntent.CanceledException e) {
