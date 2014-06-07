@@ -52,7 +52,7 @@ public class SwipeHelper implements Gefingerpoken {
     private int MAX_DISMISS_VELOCITY = 2000; // dp/sec
     private static final int SNAP_ANIM_LEN = SLOW_ANIMATIONS ? 1000 : 150; // ms
     private static final int OVERSHOOT_DURATION = 300; // ms
-    private static final int SHOW_CONTENT_TIMEOUT = 400;  // ms
+    private static final int SHOW_CONTENT_TIMEOUT = 100;  // ms
 
     public static float ALPHA_FADE_START = 0f; // fraction of thumbnail width
     // where fade starts
