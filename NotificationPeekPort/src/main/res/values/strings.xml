@@ -9,7 +9,8 @@
     <string name="notification_access">Enable Notification Access</string>
     <string name="device_access">Enable Device Access</string>
     <string name="diagnosis_notification_title">Diagnosis notification</string>
-    <string name="diagnosis_notification_content">This is a test notification.</string>
+    <string name="diagnosis_notification_title_content">How to use gestures</string>
+    <string name="diagnosis_notification_content">- Hold icon to show content. \n- Hold and release to open app. \n- Swipe left or right to dismiss.</string>
     <string name="sensor_states">Sensor states</string>
     <string name="send_notification">Send test notification</string>
     <string name="test_notification">Test notification</string>
