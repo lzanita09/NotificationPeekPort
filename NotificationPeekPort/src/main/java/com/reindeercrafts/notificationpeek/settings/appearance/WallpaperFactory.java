@@ -108,7 +108,8 @@ public class WallpaperFactory {
      */
     private Bitmap cropBitmap(Bitmap original, int width) {
         if (width > original.getWidth()) {
-            // If the wallpaper doesn't even have the width of the screen, don't crop.
+            // If the wallpaper doesn't even have the width of the screen, don't crop,
+            // just return the original bitmap.
             return original;
         }
         Bitmap cropped = Bitmap.createBitmap(original, 0, 0, width, original.getHeight());
