@@ -601,7 +601,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
             final PendingIntent contentIntent = n.getNotification().contentIntent;
             if (contentIntent != null) {
-                mNotificationIcon.setOnClickListener(new NotificationClicker(contentIntent, this));
+                mNotificationIcon
+                        .setOnClickListener(new NotificationClicker(mContext, contentIntent, this));
             } else {
                 mNotificationIcon.setOnClickListener(null);
             }

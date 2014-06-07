@@ -197,7 +197,7 @@ public class NotificationPeekActivity extends Activity {
             final PendingIntent contentIntent = nextNotification.getNotification().contentIntent;
             if (contentIntent != null) {
                 NotificationClicker mNotificationClicker =
-                        new NotificationClicker(contentIntent, mPeek);
+                        new NotificationClicker(this, contentIntent, mPeek);
                 mNotificationIcon.setOnClickListener(mNotificationClicker);
             } else {
                 mNotificationIcon.setOnClickListener(null);
