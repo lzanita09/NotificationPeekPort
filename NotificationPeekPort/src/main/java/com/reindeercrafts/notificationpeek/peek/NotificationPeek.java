@@ -601,7 +601,7 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
 
             final PendingIntent contentIntent = n.getNotification().contentIntent;
             if (contentIntent != null) {
-                mNotificationIcon.setOnClickListener(new NotificationClicker(n, this));
+                mNotificationIcon.setOnClickListener(new NotificationClicker(contentIntent, this));
             } else {
                 mNotificationIcon.setOnClickListener(null);
             }
@@ -748,6 +748,8 @@ public class NotificationPeek implements SensorActivityHandler.SensorChangedCall
     /* Called after click event is triggered, used to clean up event listeners and
      * set mNextNotification to null. */
     public void onPostClick() {
+        dismissNotification();
+        removeNotification((StatusBarNotification) mNotificationView.getTag());
         mSensorHandler.unregisterEventListeners();
         mNextNotification = null;
     }

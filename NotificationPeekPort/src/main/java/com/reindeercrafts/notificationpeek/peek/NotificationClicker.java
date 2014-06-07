@@ -1,7 +1,6 @@
 package com.reindeercrafts.notificationpeek.peek;
 
 import android.app.PendingIntent;
-import android.service.notification.StatusBarNotification;
 import android.view.View;
 
 /**
@@ -13,13 +12,11 @@ public class NotificationClicker implements View.OnClickListener {
 
     private PendingIntent mPendingIntent;
 
-    private StatusBarNotification mNotification;
     private NotificationPeek mPeek;
 
 
-    public NotificationClicker(StatusBarNotification notification, NotificationPeek peek) {
-        this.mPendingIntent = notification.getNotification().contentIntent;
-        this.mNotification = notification;
+    public NotificationClicker(PendingIntent contentIntent, NotificationPeek peek) {
+        this.mPendingIntent = contentIntent;
         this.mPeek = peek;
     }
 
@@ -37,8 +34,6 @@ public class NotificationClicker implements View.OnClickListener {
             e.printStackTrace();
         }
 
-        mPeek.dismissNotification();
-        mPeek.removeNotification(mNotification);
         mPeek.onPostClick();
     }
 }

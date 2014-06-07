@@ -1,6 +1,7 @@
 package com.reindeercrafts.notificationpeek.peek;
 
 import android.app.Activity;
+import android.app.PendingIntent;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -193,10 +194,13 @@ public class NotificationPeekActivity extends Activity {
             mNotificationView.setTag(nextNotification);
             mPeek.getNotificationHub().setCurrentNotification(nextNotification);
 
-            if (nextNotification.getNotification().contentIntent != null) {
+            final PendingIntent contentIntent = nextNotification.getNotification().contentIntent;
+            if (contentIntent != null) {
                 NotificationClicker mNotificationClicker =
-                        new NotificationClicker(nextNotification, mPeek);
+                        new NotificationClicker(contentIntent, mPeek);
                 mNotificationIcon.setOnClickListener(mNotificationClicker);
+            } else {
+                mNotificationIcon.setOnClickListener(null);
             }
 
             if (nextNotificationIndex == 0) {
