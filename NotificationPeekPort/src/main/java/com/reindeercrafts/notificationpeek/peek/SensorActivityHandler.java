@@ -111,7 +111,7 @@ public class SensorActivityHandler {
                     if (mHasInitialValues) {
                         float dX = Math.abs(mLastX - x);
                         float dY = Math.abs(mLastY - y);
-                        float dZ = Math.abs(mLastY - z);
+                        float dZ = Math.abs(mLastZ - z);
                         if (dX >= NOISE_THRESHOLD ||
                                 dY >= NOISE_THRESHOLD || dZ >= NOISE_THRESHOLD) {
                             if (mWaitingForMovement) {
